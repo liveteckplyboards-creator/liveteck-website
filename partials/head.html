@@ -33,13 +33,14 @@
     d.classList.remove('no-js');
     var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) d.classList.add('reduced');
-    // Opening intro lives on Home only: plays once per browser session, skipped on internal navigation and for reduced motion.
+    // Opening intro lives on Home only: plays on every load and reload, skipped on internal navigation (curtain instead) and for reduced motion.
     try {
       var isHome = /^\/(index(\.html)?)?$/.test(location.pathname);
-      if (!isHome || reduce || sessionStorage.getItem('lt-transition') || sessionStorage.getItem('lt-intro')) d.classList.add('no-loader');
+      var viaLink = !!sessionStorage.getItem('lt-transition');
+      if (isHome && !reduce && !viaLink) d.classList.add('intro-active');
+      else d.classList.add('no-loader');
       // arriving through an internal link: the curtain is already down at first paint, JS lifts it (one wipe, no flash)
-      if (sessionStorage.getItem('lt-transition') && !reduce) d.classList.add('curtain-in');
-      else { d.classList.add('intro-active'); sessionStorage.setItem('lt-intro', '1'); }
+      if (viaLink && !reduce) d.classList.add('curtain-in');
     } catch (e) { d.classList.add('no-loader'); }
     // Safety net: if the app script fails to start, never leave content hidden.
     setTimeout(function () { if (!window.__ltBooted) { d.classList.add('reduced', 'no-loader', 'lt-fallback'); d.classList.remove('intro-active'); } }, 6000);

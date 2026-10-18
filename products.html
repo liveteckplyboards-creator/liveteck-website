@@ -24,17 +24,17 @@
       </div>
     </section>
 
-    <div class="filter-bar" id="after-hero">
-      <div class="container filter-inner">
-        <div class="filters" role="toolbar" aria-label="Filter products" data-filters></div>
-        <label class="search-box"><span class="sr-only">Search products</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input type="search" placeholder="Search products…" data-search />
-        </label>
+    <!-- the filter bar lives inside the catalogue section, so it only sticks while the catalogue is on screen -->
+    <section class="bg-ivory" id="after-hero" style="padding-bottom:var(--section)">
+      <div class="filter-bar">
+        <div class="container filter-inner">
+          <div class="filters" role="toolbar" aria-label="Filter products" data-filters></div>
+          <label class="search-box"><span class="sr-only">Search products</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" placeholder="Search products…" data-search />
+          </label>
+        </div>
       </div>
-    </div>
-
-    <section class="bg-ivory" style="padding-bottom:var(--section)">
       <div class="container" data-catalogue aria-live="polite"></div>
     </section>
 
@@ -75,7 +75,7 @@
           <span class="eyebrow eyebrow--plain reveal">Know the difference</span>
           <h2 class="h2" id="vs-title" data-split>Plywood <em>or</em> block board?</h2>
         </div>
-        <div class="values-grid" style="grid-template-columns:1fr 1fr">
+        <div class="values-grid values-grid--2">
           <article class="value-card reveal"><span class="vc-num">Plywood</span><h3>Layered for all-round strength</h3><p>Thin hardwood veneers glued at right angles. Strong in every direction, holds screws firmly and is the first choice for carcasses, kitchens and wardrobes.</p></article>
           <article class="value-card reveal"><span class="vc-num">Block board</span><h3>Solid core for long spans</h3><p>Solid timber strips between veneers. Lighter and very stiff along its length — ideal for doors, long shelves, beds and table tops that must not sag.</p></article>
         </div>

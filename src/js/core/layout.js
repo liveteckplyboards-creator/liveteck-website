@@ -37,6 +37,7 @@ export function initHeader(page) {
   let last = 0;
   const bar = $('.mobile-bar');
   const toTop = $('[data-to-top]');
+  const touch = matchMedia('(hover: none)').matches;
   toTop?.addEventListener('click', () => {
     // keyboard users land back at the top of the page, not on a button that's about to hide
     const done = () => $('.site-header .brand')?.focus({ preventScroll: true });
@@ -50,7 +51,9 @@ export function initHeader(page) {
     header.classList.toggle('is-hidden', hide);
     document.body.classList.toggle('header-hidden', hide);
     bar?.classList.toggle('on', y > 320);
-    toTop?.classList.toggle('on', y > innerHeight * 1.1);
+    // phones: only offer it when the visitor scrolls back up (or reaches the end), so it never sits on what they're reading
+    const wantsTop = !touch || y < last || y + innerHeight > document.documentElement.scrollHeight - 160;
+    toTop?.classList.toggle('on', y > innerHeight * 1.1 && wantsTop);
     last = y;
   };
   addEventListener('scroll', onScroll, { passive: true });

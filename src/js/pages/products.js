@@ -44,7 +44,7 @@ function setFilter(id, scroll = true) {
   $$('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === id)));
   renderCatalogue();
   if (scroll) {
-    const top = $('.filter-bar').getBoundingClientRect().top + scrollY - 72;
+    const top = $('#after-hero').getBoundingClientRect().top + scrollY - 72; // section top: the sticky bar's own rect moves
     lenis ? lenis.scrollTo(top, { duration: 1 }) : scrollTo({ top, behavior: 'smooth' });
   }
 }

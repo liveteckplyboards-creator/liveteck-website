@@ -98,7 +98,7 @@ Lighthouse 12.8 ran against `vite preview` with default mobile settings (simulat
 | QA-020 | All | All | Accessibility | Medium | Heading order skipped levels (footer `h4`, drawer `h4`) | Screen-reader navigation breaks | Footer headings are `h2.footer-title`; drawer sections are `h3` | Verified |
 | QA-021 | All | All | Accessibility | Medium | The closed mobile menu, modal and drawer were still reachable by keyboard | Focus disappears into hidden UI | `inert` set while closed, plus a focus trap while open | Verified |
 | QA-022 | All | Mobile | Accessibility | Low | Tap targets under 44 px: header phone ring, social icons, star rating labels | Mis-taps | Enlarged to 44 px | Verified |
-| QA-023 | Home | All | UX | Medium | The opening intro replayed on every Home load and reload | Repeat visitors are forced to wait | Plays once per browser session. Skippable by click, key, wheel or touch; skipped on internal navigation and for reduced motion | Verified |
+| QA-023 | Home | All | UX | Medium | The opening intro replayed on every Home load and reload | Repeat visitors are forced to wait | Made skippable by click, key, wheel or touch; skipped on internal navigation and for reduced motion (replay on every load restored per client, QA-056) | Verified |
 | QA-024 | All | Mobile | UX | Low | The menu, modal and drawer vanished instantly on close, cutting off their close animation | Abrupt; the transition was never seen | Visibility now switches at the end of the close transition | Verified |
 | QA-025 | Testimonials | All | UX | Low | The rating summary sat in the page hero, showing a rating with zero reviews | Misleading social proof | Summary appears above the review list, only when approved reviews exist | Verified |
 | QA-026 | Home | All | Performance / UX | Medium | The hero film started downloading during first paint | Competes with LCP; mobile data | Poster image paints first; the film starts after the first interaction and fades in once playing | Verified |
@@ -122,6 +122,19 @@ Lighthouse 12.8 ran against `vite preview` with default mobile settings (simulat
 | QA-043 | Home | Desktop | CLS | High | CLS 0.178: locking scroll for the intro removed the scrollbar, widening the viewport ~15 px and moving the centred intro layers | Page jumps on arrival | `scrollbar-gutter: stable` on `html` (also stops the jump when the modal or drawer opens) | Verified (CLS 0.001, desktop Perf 97) |
 
 | QA-044 | All | All | Animation | High | Clicking a menu link showed the page-transition shade twice: the new page painted without it, then JS raised it again before wiping | Looks glitchy on every navigation | The arriving page has the curtain down from its first frame (class set by the head script), and JS only lifts it: one continuous wipe | Verified (filmstrip) |
+| QA-045 | All | Mobile | UI | Medium | Sticky header and Products filter bar were 97% opaque — text scrolling underneath showed through | Looks messy | Solid ivory backgrounds | Verified |
+| QA-046 | All | Mobile | UX | Medium | Back-to-top button sat on top of the text being read | Covers content | On phones it appears only when scrolling back up (or at the page end) | Verified |
+| QA-047 | Home | Mobile | UI | Medium | "Spaces" cards: tag, title and uses collided on one line | Overlapping text | Labels stack vertically on phones; stronger gradient | Verified |
+| QA-048 | Products | Mobile | UI | High | Comparison table squeezed into 3 narrow columns (1–2 words per line) | Unreadable | Each row becomes a card (material, Best for, Why choose it) | Verified |
+| QA-049 | Products | Mobile (360) | Responsive | High | "Plywood or block board?" cards forced to 2 columns by an inline style; overflowed at 360px | Horizontal overflow, cramped text | `values-grid--2` class that stacks on phones | Verified |
+| QA-050 | Products | Mobile | UX | Medium | Filter bar stayed stuck over the CTA and footer | Covers content | Filter bar lives inside the catalogue section, so it only sticks there; filter scroll target uses the section top | Verified |
+| QA-051 | About | Mobile | UI | Low | Value cards had a fixed 250px height and loose heading line-height | Large empty gaps | Auto height and line-height 1.1 on phones | Verified |
+| QA-052 | Home | Mobile | UI | Low | "Share your experience" label clipped inside its button | Cut-off text | Long button labels wrap on phones; tighter letter-spacing | Verified |
+| QA-053 | All | Phones + tablets | Accessibility | Medium | Text links, product titles, breadcrumbs, phone links and the review checkbox were under 44px tall | Mis-taps | 44px touch targets on touch screens | Verified |
+| QA-054 | All | Mobile | Accessibility | Low | Text under 12px (product tags, hero stats labels, action-bar labels, thickness units) | Hard to read | Raised to 12px minimum | Verified |
+| QA-055 | All | All | UX | Low | Action-bar "Enquire" was a dead `#` link; hidden email/review links had `href="#"` | Jumps to top if JS fails; not a real control | Proper `<button>`; links get their href only from settings | Verified |
+| QA-056 | Home | All | UX | Medium | Client asked for the opening animation on every load and reload (was once per session) | Brand moment expected on each visit | Intro plays on every load/reload; still skipped on internal navigation (curtain) and for reduced motion | Verified |
+
 <!-- MORE_ISSUES -->
 
 ---
