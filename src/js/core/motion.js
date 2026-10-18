@@ -1,24 +1,60 @@
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 
-gsap.registerPlugin(ScrollTrigger);
+// ScrollTrigger is loaded on demand (first interaction): once registered it keeps a perpetual
+// requestAnimationFrame loop, which an untouched, still-loading page doesn't need.
+export let ScrollTrigger = null;
+let stPromise = null;
+export const loadScrollTrigger = () => (stPromise ||= import('gsap/ScrollTrigger').then(({ ScrollTrigger: ST }) => {
+  gsap.registerPlugin(ST);
+  // mobile address-bar show/hide fires resize constantly — don't recalc every trigger on it.
+  // No automatic refresh on DOMContentLoaded/load: scroll scenes refresh themselves when created.
+  ST.config({ ignoreMobileResize: true, autoRefreshEvents: 'visibilitychange,resize' });
+  lenis?.on('scroll', ST.update);
+  ScrollTrigger = ST;
+  return ST;
+}));
+// sections with content-visibility:auto get their real size when first rendered → re-measure triggers
+let cvTimer;
+document.addEventListener('contentvisibilityautostatechange', (e) => {
+  if (e.skipped || !ScrollTrigger?.getAll().length) return;
+  clearTimeout(cvTimer); cvTimer = setTimeout(() => ScrollTrigger.refresh(), 250);
+}, true);
 
 export const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 export let lenis = null;
-export { gsap, ScrollTrigger };
+export { gsap };
+
+/** Run work when the main thread is idle (keeps long tasks out of the critical path). */
+export const idle = (fn, timeout = 1200) =>
+  new Promise(res => {
+    const run = () => { try { fn?.(); } finally { res(); } };
+    'requestIdleCallback' in window ? requestIdleCallback(run, { timeout }) : setTimeout(run, 60);
+  });
 
 export function initSmoothScroll() {
   if (reduced) return null;
   lenis = new Lenis({ duration: 1.15, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add(time => lenis.raf(time * 1000));
+  ScrollTrigger && lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.lagSmoothing(0);
+  // Drive Lenis only while it's needed: a per-frame loop on an idle page keeps the main thread
+  // (and the battery) busy for nothing. Input wakes it; ~1 s without smooth scrolling puts it to sleep.
+  let awake = false, still = 0;
+  const tick = (time) => {
+    lenis.raf(time * 1000);
+    if (lenis.isScrolling) still = 0;
+    else if (++still > 60) { gsap.ticker.remove(tick); awake = false; }
+  };
+  const wake = () => { still = 0; if (!awake) { awake = true; gsap.ticker.add(tick); } };
+  ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(ev => addEventListener(ev, wake, { capture: true, passive: true }));
+  const scrollTo = lenis.scrollTo.bind(lenis);
+  lenis.scrollTo = (...args) => { wake(); return scrollTo(...args); };
   // in-page anchors
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]');
     if (!a || a.getAttribute('href').length < 2) return;
-    const el = document.querySelector(a.getAttribute('href'));
+    let el = null;
+    try { el = document.querySelector(a.getAttribute('href')); } catch { /* invalid selector */ }
     if (el) { e.preventDefault(); lenis.scrollTo(el, { offset: -80 }); }
   });
   return lenis;
@@ -27,13 +63,12 @@ export function initSmoothScroll() {
 export const stopScroll = () => lenis?.stop();
 export const startScroll = () => lenis?.start();
 
-/** Split element text into masked lines of words for reveal animations. */
+/** Split element text into masked lines (split on <br>) for reveal animations. */
 export function splitLines(el) {
-  if (el.dataset.split) return el.querySelectorAll('.split-line > span');
+  if (el.dataset.split === '1') return el.querySelectorAll('.split-line > span');
   el.dataset.split = '1';
-  // preserve <em>/<br> by splitting on <br>
   const chunks = el.innerHTML.split(/<br\s*\/?>/i);
-  el.innerHTML = chunks.map(c => `<span class="split-line"><span>${c.trim()}</span></span>`).join('');
+  el.innerHTML = chunks.map((c, i) => `<span class="split-line" style="--li:${i}"><span>${c.trim()}</span></span>`).join('');
   return el.querySelectorAll('.split-line > span');
 }
 
@@ -56,130 +91,85 @@ export function splitWords(el) {
   return el.querySelectorAll('.w');
 }
 
+/* ---------- reveals: one IntersectionObserver, CSS transitions (compositor-only) ---------- */
+let revealIO = null;
+const countUp = (el) => {
+  const end = parseFloat(el.dataset.count);
+  const from = parseFloat(el.dataset.from || 0);
+  const node = el.firstChild;
+  if (reduced) { node.nodeValue = end; return; }
+  const t0 = performance.now(), dur = 2000;
+  const step = (t) => {
+    const p = Math.min(1, (t - t0) / dur);
+    node.nodeValue = Math.round(from + (end - from) * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+};
+
 export function initReveals(root = document) {
-  if (reduced) {
-    root.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
-    root.querySelectorAll('.img-reveal').forEach(el => { el.style.clipPath = 'none'; });
+  const targets = root.querySelectorAll('.reveal:not(.is-in), .img-reveal:not(.is-in), [data-split]:not(.is-in), [data-count]:not([data-counted])');
+  if (!targets.length) return;
+  targets.forEach(el => {
+    if (el.hasAttribute('data-split') && el.dataset.split !== '1') { splitLines(el); el.classList.add('split-reveal'); }
+  });
+  if (reduced || !('IntersectionObserver' in window)) {
+    targets.forEach(el => { el.classList.add('is-in'); if (el.dataset.count) { el.dataset.counted = '1'; countUp(el); } });
     return;
   }
-  // fade-up blocks, batched for stagger
-  ScrollTrigger.batch(root.querySelectorAll('.reveal:not([data-revealed])'), {
-    start: 'top 88%',
-    onEnter: batch => {
-      batch.forEach(el => el.setAttribute('data-revealed', ''));
-      gsap.to(batch, { opacity: 1, y: 0, duration: 1.1, ease: 'expo.out', stagger: 0.09, overwrite: true });
-    },
-  });
-  // headline line reveals
-  root.querySelectorAll('[data-split]:not([data-split="1"])').forEach(el => {
-    const lines = splitLines(el);
-    gsap.set(lines, { yPercent: 110 });
-    ScrollTrigger.create({
-      trigger: el, start: 'top 88%', once: true,
-      onEnter: () => gsap.to(lines, { yPercent: 0, duration: 1.25, ease: 'expo.out', stagger: 0.1 }),
+  revealIO ||= new IntersectionObserver((entries) => {
+    let n = 0;
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      revealIO.unobserve(el);
+      if (el.dataset.count) { el.dataset.counted = '1'; countUp(el); return; }
+      if (el.classList.contains('reveal') || el.classList.contains('img-reveal')) el.style.setProperty('--rd', `${Math.min(n++, 6) * 0.09}s`);
+      el.classList.add('is-in');
     });
-  });
-  // image wipe reveals
-  root.querySelectorAll('.img-reveal').forEach(el => {
-    gsap.fromTo(el, { clipPath: 'inset(100% 0% 0% 0%)' }, {
-      clipPath: 'inset(0% 0% 0% 0%)', duration: 1.6, ease: 'expo.inOut',
-      scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-    });
-  });
-  // parallax media
-  root.querySelectorAll('[data-parallax]').forEach(el => {
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.01 });
+  targets.forEach(el => revealIO.observe(el));
+}
+
+/** Scroll-linked parallax for [data-parallax] media (transform only). */
+export function initParallax(root = document) {
+  if (reduced) return;
+  root.querySelectorAll('[data-parallax]:not([data-px])').forEach(el => {
+    el.dataset.px = '1';
     const amt = parseFloat(el.dataset.parallax) || 12;
     gsap.fromTo(el, { yPercent: -amt / 2 }, {
       yPercent: amt / 2, ease: 'none',
       scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
     });
   });
-  // counters
-  root.querySelectorAll('[data-count]').forEach(el => {
-    const end = parseFloat(el.dataset.count);
-    const obj = { v: parseFloat(el.dataset.from || 0) };
-    ScrollTrigger.create({
-      trigger: el, start: 'top 90%', once: true,
-      onEnter: () => gsap.to(obj, { v: end, duration: 2.2, ease: 'power3.out', onUpdate: () => { el.firstChild.nodeValue = Math.round(obj.v); } }),
-    });
-  });
 }
 
 /**
- * Opening intro: plywood plies stack up → are pressed into a gold line → the logo builds
- * (K ply by ply, wordmark wipe, rules, sub-line, sprout grows) → the screen splits into
- * ply strips that slide away. Resolves when the reveal starts so the hero animates in underneath.
+ * Opening intro (Home). The whole sequence is CSS (see .intro in main.css) and starts at
+ * first paint; this only adds skip, scroll lock and cleanup, and resolves when the
+ * ply strips start sliding so the hero can animate in underneath.
  */
 export function runIntro() {
   const root = document.documentElement;
   const intro = document.querySelector('.intro');
-  try { sessionStorage.setItem('lt-visited', '1'); } catch { /* ignore */ }
   const done = () => { root.classList.remove('intro-active'); intro?.remove(); lenis?.start(); };
   if (!intro || root.classList.contains('no-loader') || reduced) { done(); return Promise.resolve(); }
   lenis?.stop();
-
-  const $ = (s) => intro.querySelectorAll(s);
-  const plies = $('.intro-plies span');
-  const kParts = [...$('.il-k')].reverse(); // stem first, then arm, then the thin plies
-  const count = intro.querySelector('.intro-count b');
-  const counter = { v: 0 };
-  const isMobile = innerWidth < 760;
-
-  gsap.set($('.intro-logo'), { autoAlpha: 0 });
-  gsap.set(plies, { yPercent: -260, autoAlpha: 0, scaleX: 0.92 });
-  gsap.set(kParts, { xPercent: 40, autoAlpha: 0 });
-  gsap.set($('.il-word'), { clipPath: 'inset(0% 100% 0% 0%)' });
-  gsap.set($('.il-sub'), { clipPath: 'inset(0% 50% 0% 50%)' });
-  gsap.set($('.il-rule'), { scaleX: 0, transformOrigin: '50% 50%' });
-  gsap.set($('.il-leaf'), { scale: 0, rotate: -14, transformOrigin: '50% 100%' });
-  gsap.set($('.intro-tag > *'), { autoAlpha: 0, y: 12 });
-  gsap.set($('.intro-meta > *'), { autoAlpha: 0 });
-
-  let resolveReveal;
-  const revealed = new Promise(r => { resolveReveal = r; });
-
-  const tl = gsap.timeline({ defaults: { ease: 'expo.out' }, onComplete: done });
-  tl.to($('.intro-meta > *'), { autoAlpha: 1, duration: 0.6, stagger: 0.1 }, 0)
-    .to(counter, { v: 100, duration: 2.5, ease: 'power2.inOut', onUpdate: () => { count.textContent = String(Math.round(counter.v)).padStart(3, '0'); } }, 0)
-    // 1. plies drop in and stack
-    .to(plies, { yPercent: 0, autoAlpha: 1, scaleX: 1, duration: 0.7, ease: 'back.out(1.6)', stagger: 0.085 }, 0.1)
-    // 2. pressed into a single gold line
-    .to(plies, { scaleY: 0.18, duration: 0.42, ease: 'power3.in' }, 1.0)
-    .to($('.intro-plies'), { gap: 0, duration: 0.42, ease: 'power3.in' }, 1.0)
-    .add(() => intro.querySelector('.intro-plies').classList.add('is-pressed'), 1.22)
-    .to($('.intro-plies'), { scaleX: 1.35, autoAlpha: 0, duration: 0.5, ease: 'power2.in' }, 1.38)
-    // 3. the logo builds
-    .to($('.intro-logo'), { autoAlpha: 1, duration: 0.01 }, 1.5)
-    .to(kParts, { xPercent: 0, autoAlpha: 1, duration: 0.8, stagger: 0.09 }, 1.5)
-    .to($('.il-word'), { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.95, ease: 'expo.inOut' }, 1.55)
-    .to($('.il-rule'), { scaleX: 1, duration: 0.8, ease: 'expo.inOut' }, 1.85)
-    .to($('.il-sub'), { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'expo.inOut' }, 1.95)
-    .to($('.il-leaf'), { scale: 1, rotate: 0, duration: 0.9, ease: 'back.out(2)' }, 2.15)
-    .to($('.intro-tag > *'), { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.08 }, 2.3)
-    .to($('.intro-glow'), { scale: 1.25, opacity: 0.7, duration: 1.4, ease: 'sine.inOut' }, 1.5)
-    // 4. exit: logo lifts, ply strips slide away alternately
-    .addLabel('exit', 2.95)
-    .to($('.intro-stage'), { scale: 0.94, autoAlpha: 0, duration: 0.6, ease: 'power3.in' }, 'exit')
-    .to($('.intro-meta, .intro-skip, .intro-glow'), { autoAlpha: 0, duration: 0.4 }, 'exit')
-    .add(() => { intro.style.pointerEvents = 'none'; resolveReveal(); }, 'exit+=0.35')
-    .to($('.intro-bands i'), {
-      xPercent: (i) => (i % 2 ? 101 : -101), duration: isMobile ? 0.85 : 1.05, ease: 'expo.inOut',
-      stagger: { each: 0.055, from: 'center' },
-    }, 'exit+=0.3');
-
-  // Skip: click, key, wheel or touch jumps straight to the reveal
-  let skipped = false;
-  const skip = () => {
-    if (skipped || tl.time() >= tl.labels.exit) return;
-    skipped = true;
-    tl.timeScale(1).seek('exit');
-  };
-  intro.addEventListener('click', skip);
-  ['keydown', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, skip, { once: true, passive: true }));
-
-  // never hold the page hostage
-  setTimeout(() => { if (!skipped && tl.time() < tl.labels.exit) skip(); }, 6000);
-  return revealed;
+  return new Promise(resolve => {
+    let revealed = false, finished = false;
+    const reveal = () => { if (revealed) return; revealed = true; intro.style.pointerEvents = 'none'; resolve(); };
+    const finish = () => { if (finished) return; finished = true; reveal(); done(); };
+    const band = intro.querySelector('.intro-bands i:nth-child(4)');
+    band?.addEventListener('animationstart', (e) => { if (/^ip-band/.test(e.animationName)) reveal(); });
+    intro.addEventListener('animationend', (e) => { if (e.target === intro && e.animationName === 'ip-gone') finish(); });
+    // Skip: click, key, wheel or touch jumps straight to the reveal
+    const skip = () => { if (!revealed) intro.classList.add('is-skip'); };
+    intro.addEventListener('click', skip);
+    ['keydown', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, skip, { once: true, passive: true }));
+    // never hold the page hostage, even if animation events don't fire
+    setTimeout(reveal, 2900);
+    setTimeout(finish, 4200);
+  });
 }
 
 /** Curtain wipe between internal pages. */
@@ -195,7 +185,7 @@ export function initPageTransitions() {
   } catch { /* ignore */ }
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href]');
-    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank' || a.hasAttribute('download')) return;
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank' || a.hasAttribute('download')) return;
     const url = new URL(a.href, location.href);
     if (url.origin !== location.origin || url.pathname.startsWith('/admin')) return;
     if (url.pathname === location.pathname) return; // same page (hash)

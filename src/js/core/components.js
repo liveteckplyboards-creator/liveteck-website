@@ -32,6 +32,13 @@ export function productCard(p, cats, { reveal = true } = {}) {
   </article>`;
 }
 
+/** Placeholder cards shown while live data loads on a first visit. */
+export function skeletonCards(n = 3) {
+  return `<div class="sk-row" role="status" aria-label="Loading reviews">${Array.from({ length: n }, () => `
+    <div class="sk-card" aria-hidden="true"><i class="sk sk-line" style="width:38%"></i><i class="sk sk-block"></i><i class="sk sk-line"></i><i class="sk sk-line" style="width:70%"></i>
+      <div class="sk-who"><i class="sk sk-circle"></i><i class="sk sk-line" style="width:46%"></i></div></div>`).join('')}</div>`;
+}
+
 export function stars(n = 5) {
   return `<div class="t-stars" aria-label="${n} out of 5 stars">${Array.from({ length: 5 }, (_, i) => `<span style="opacity:${i < n ? 1 : 0.22}">${icons.star}</span>`).join('')}</div>`;
 }
@@ -58,6 +65,7 @@ function ensureDrawer() {
   drawer.setAttribute('role', 'dialog');
   drawer.setAttribute('aria-modal', 'true');
   drawer.setAttribute('aria-hidden', 'true');
+  drawer.inert = true;
   drawer.innerHTML = '<div class="drawer-backdrop" data-drawer-close></div><div class="drawer-panel" data-lenis-prevent><button class="drawer-close" data-drawer-close aria-label="Close">' + icons.close + '</button><div class="drawer-body"></div></div>';
   document.body.appendChild(drawer);
   drawer.addEventListener('click', e => { if (e.target.closest('[data-drawer-close]')) closeDrawer(); });
@@ -83,9 +91,9 @@ export function openProduct(p, cats) {
         </div>
         <h2 id="pd-title">${esc(p.name)}</h2>
         <p class="pd-desc">${esc(p.description || p.short)}</p>
-        ${p.features?.length ? `<div class="pd-section"><h4>Key features</h4><ul class="feat-list">${p.features.map(f => `<li>${icons.check}<span>${esc(f)}</span></li>`).join('')}</ul></div>` : ''}
-        ${p.specs?.length ? `<div class="pd-section"><h4>Specifications</h4><table class="spec-table"><tbody>${p.specs.map(r => `<tr><th>${esc(r.label)}</th><td>${esc(r.value)}</td></tr>`).join('')}</tbody></table></div>` : ''}
-        ${p.applications?.length ? `<div class="pd-section"><h4>Ideal for</h4><ul class="tg-uses">${p.applications.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : ''}
+        ${p.features?.length ? `<div class="pd-section"><h3>Key features</h3><ul class="feat-list">${p.features.map(f => `<li>${icons.check}<span>${esc(f)}</span></li>`).join('')}</ul></div>` : ''}
+        ${p.specs?.length ? `<div class="pd-section"><h3>Specifications</h3><table class="spec-table"><tbody>${p.specs.map(r => `<tr><th>${esc(r.label)}</th><td>${esc(r.value)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+        ${p.applications?.length ? `<div class="pd-section"><h3>Ideal for</h3><ul class="tg-uses">${p.applications.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : ''}
         <div class="pd-actions">
           <button class="btn" data-enquire="${esc(p.name)}">Enquire now ${icons.arrow}</button>
           <a class="btn btn--wa" href="${waLink(s.whatsapp || '919912153030', waText(p))}" target="_blank" rel="noopener">${icons.whatsapp} WhatsApp</a>
@@ -98,8 +106,9 @@ export function openProduct(p, cats) {
     $('.pd-main img', d).src = cld(imgs[+b.dataset.thumb], 'w_1200,c_limit');
     $$('[data-thumb]', d).forEach(x => x.setAttribute('aria-current', String(x === b)));
   }));
-  $('.drawer-panel', d).scrollTop = 0;
+  d.inert = false;
   d.classList.add('is-open');
+  $('.drawer-panel', d).scrollTop = 0; // after is-open: a closed drawer's content isn't rendered (content-visibility)
   d.setAttribute('aria-hidden', 'false');
   stopScroll();
   document.documentElement.style.overflow = 'hidden';
@@ -111,6 +120,7 @@ export function closeDrawer() {
   if (!drawer) return;
   drawer.classList.remove('is-open');
   drawer.setAttribute('aria-hidden', 'true');
+  drawer.inert = true;
   startScroll();
   document.documentElement.style.overflow = '';
   if (history.replaceState && location.hash) history.replaceState(null, '', location.pathname + location.search);

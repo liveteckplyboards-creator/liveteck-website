@@ -3,30 +3,45 @@
 <title>{{title}}</title>
 <meta name="description" content="{{desc}}" />
 <meta name="theme-color" content="#062619" />
+<link rel="canonical" href="{{site}}{{path}}" />
 <meta property="og:type" content="website" />
+<meta property="og:locale" content="en_IN" />
 <meta property="og:site_name" content="Liveteck Ply &amp; Boards" />
 <meta property="og:title" content="{{title}}" />
 <meta property="og:description" content="{{desc}}" />
-<meta property="og:image" content="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1200,h_630,c_fill/liveteck/brand/hero-poster" />
+<meta property="og:url" content="{{site}}{{path}}" />
+<meta property="og:image" content="https://res.cloudinary.com/duswrz4u/image/upload/f_jpg,q_auto,w_1200,h_630,c_fill/liveteck/brand/hero-poster" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Stacks of premium plywood in a warm, sunlit warehouse — Liveteck Ply &amp; Boards" />
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{title}}" />
+<meta name="twitter:description" content="{{desc}}" />
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
 <link rel="apple-touch-icon" href="/brand/liveteck-icon.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&display=swap" rel="stylesheet" />
+<link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+<!-- site styles: a real stylesheet so dev never paints unstyled; the build inlines it (vite.config.js) -->
+<link rel="stylesheet" href="/src/styles/main.css" />
+<link rel="preload" as="image" fetchpriority="high" imagesizes="100vw" imagesrcset="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_640,c_limit/liveteck/{{lcp}} 640w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_960,c_limit/liveteck/{{lcp}} 960w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1280,c_limit/liveteck/{{lcp}} 1280w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1920,c_limit/liveteck/{{lcp}} 1920w" />
+<!-- First paint waits until the hero is fully parsed (the element after it, #after-hero, exists): no half-built,
+     bottom-anchored hero growing on screen. Chromium only; other browsers ignore it. -->
+<link rel="expect" href="#after-hero" blocking="render" />
 <script>
-  document.documentElement.classList.remove('no-js');
-  // Opening intro: every fresh visit to Home; other pages only on the first page of a visit; never on internal navigation.
-  try {
-    var isHome = /^\/(index\.html)?$/.test(location.pathname);
-    var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion || sessionStorage.getItem('lt-transition') || (!isHome && sessionStorage.getItem('lt-visited'))) document.documentElement.classList.add('no-loader');
-    else document.documentElement.classList.add('intro-active');
-  } catch (e) {}
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('reduced');
-  // Safety net: if the app script fails to start, never leave content hidden behind the loader/reveals.
-  setTimeout(function () { if (!window.__ltBooted) { document.documentElement.classList.add('reduced', 'no-loader', 'lt-fallback'); document.documentElement.classList.remove('intro-active'); } }, 5000);
+  (function () {
+    var d = document.documentElement;
+    d.classList.remove('no-js');
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) d.classList.add('reduced');
+    // Opening intro lives on Home only: plays once per browser session, skipped on internal navigation and for reduced motion.
+    try {
+      var isHome = /^\/(index(\.html)?)?$/.test(location.pathname);
+      if (!isHome || reduce || sessionStorage.getItem('lt-transition') || sessionStorage.getItem('lt-intro')) d.classList.add('no-loader');
+      else { d.classList.add('intro-active'); sessionStorage.setItem('lt-intro', '1'); }
+    } catch (e) { d.classList.add('no-loader'); }
+    // Safety net: if the app script fails to start, never leave content hidden.
+    setTimeout(function () { if (!window.__ltBooted) { d.classList.add('reduced', 'no-loader', 'lt-fallback'); d.classList.remove('intro-active'); } }, 6000);
+  })();
 </script>
 <script type="application/ld+json">
 {
@@ -37,6 +52,7 @@
   "foundingDate": "2015",
   "founder": { "@type": "Person", "name": "Amith Jain" },
   "telephone": "+91-99121-53030",
+  "image": "https://res.cloudinary.com/duswrz4u/image/upload/f_jpg,q_auto,w_1200/liveteck/brand/hero-poster",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Temple Street, Beside Pydha Kalyana Mandapam",

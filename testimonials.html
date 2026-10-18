@@ -1,27 +1,34 @@
 <!doctype html>
 <html lang="en" class="no-js">
 <head>
-  <!-- @include head.html title="Testimonials — What Customers Say About Liveteck Ply &amp; Boards, Kakinada" desc="Read reviews from homeowners, carpenters, interior designers and builders who use Liveteck plywood, block boards, veneers and laminates — and share your own experience." -->
+  <!-- @include head.html path="/testimonials" title="Testimonials — What Customers Say About Liveteck Ply &amp; Boards, Kakinada" desc="Read reviews from homeowners, carpenters, interior designers and builders who use Liveteck plywood, block boards, veneers and laminates — and share your own experience." lcp="spaces/living" -->
 </head>
 <body data-page="testimonials">
   <!-- @include header.html -->
 
   <main id="main">
     <section class="page-hero grain">
-      <div class="ph-media"><img data-parallax="12" src="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1920,c_limit/liveteck/spaces/living" alt="" /></div>
+      <div class="ph-media"><!-- @include hero-img.html id="spaces/living" --></div>
       <div class="container on-dark">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>Testimonials</span></nav>
         <div class="ph-grid">
           <h1 class="h1" data-split>Words from the<br>people we <em>build</em> with.</h1>
-          <div class="reveal" data-rating-summary>
+          <div class="reveal">
             <p class="lead">Customer satisfaction is the measure we hold ourselves to. Here is what our customers say about Liveteck.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="section bg-ivory" aria-label="Customer testimonials">
-      <div class="container" data-t-list></div>
+    <section class="section bg-ivory" id="after-hero" aria-label="Customer testimonials">
+      <div class="container" data-t-list>
+        <!-- loading placeholder, same box as the empty state (replaced by JS) — reserves the space so nothing jumps -->
+        <div class="t-empty is-ghost" role="status" aria-label="Loading reviews">
+          <span class="te-icon" aria-hidden="true"></span>
+          <div aria-hidden="true"><h2 class="h3">Reviews are on their way.</h2><p>We are collecting genuine feedback from our customers. Be one of the first to share your experience with Liveteck.</p></div>
+          <span class="btn" aria-hidden="true">Write a review <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="arrow"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        </div>
+      </div>
     </section>
 
     <section class="section bg-ivory-2" id="share" aria-labelledby="share-title">
@@ -70,8 +77,8 @@
       </div>
     </section>
 
-    <section class="section cta-banner grain" aria-labelledby="cta-title">
-      <div class="cb-bg" data-bg-video="video/veneer-film"><img data-parallax="16" src="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1920,c_limit/liveteck/brand/veneer-texture" alt="" loading="lazy" /></div>
+    <section class="section cta-banner grain cv" aria-labelledby="cta-title">
+      <div class="cb-bg" data-bg-video="video/veneer-film"><img data-parallax="16" src="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1920,c_limit/liveteck/brand/veneer-texture" srcset="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_640,c_limit/liveteck/brand/veneer-texture 640w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1280,c_limit/liveteck/brand/veneer-texture 1280w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1920,c_limit/liveteck/brand/veneer-texture 1920w" sizes="100vw" alt="" loading="lazy" /></div>
       <div class="container on-dark">
         <div>
           <span class="eyebrow reveal">Join them</span>

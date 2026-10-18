@@ -36,6 +36,13 @@ export function initHeader(page) {
 
   let last = 0;
   const bar = $('.mobile-bar');
+  const toTop = $('[data-to-top]');
+  toTop?.addEventListener('click', () => {
+    // keyboard users land back at the top of the page, not on a button that's about to hide
+    const done = () => $('.site-header .brand')?.focus({ preventScroll: true });
+    if (lenis) lenis.scrollTo(0, { duration: 1.4, onComplete: done });
+    else { scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); setTimeout(done, 600); }
+  });
   const onScroll = () => {
     const y = window.scrollY;
     header.classList.toggle('is-solid', y > 40);
@@ -43,6 +50,7 @@ export function initHeader(page) {
     header.classList.toggle('is-hidden', hide);
     document.body.classList.toggle('header-hidden', hide);
     bar?.classList.toggle('on', y > 320);
+    toTop?.classList.toggle('on', y > innerHeight * 1.1);
     last = y;
   };
   addEventListener('scroll', onScroll, { passive: true });
@@ -55,6 +63,7 @@ export function initHeader(page) {
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     menu.setAttribute('aria-hidden', String(!open));
+    menu.inert = !open;
     open ? stopScroll() : startScroll();
     document.documentElement.style.overflow = open ? 'hidden' : '';
   };
@@ -69,6 +78,7 @@ export function openModal(id, { product = '' } = {}) {
   if (!m) return;
   lastFocus = document.activeElement;
   if (product) { const sel = $('[data-product-select]', m); if (sel) sel.value = product; }
+  m.inert = false;
   m.classList.add('is-open');
   m.setAttribute('aria-hidden', 'false');
   stopScroll();
@@ -78,6 +88,7 @@ export function openModal(id, { product = '' } = {}) {
 export function closeModal(m) {
   m.classList.remove('is-open');
   m.setAttribute('aria-hidden', 'true');
+  m.inert = true;
   if (!$('.drawer.is-open')) { startScroll(); document.documentElement.style.overflow = ''; }
   lastFocus?.focus?.();
 }

@@ -1,8 +1,8 @@
-import { boot } from '../core/app.js';
-import { gsap, ScrollTrigger, splitLines, splitWords, reduced } from '../core/motion.js';
+import { boot, whenEngaged } from '../core/app.js';
+import { gsap, ScrollTrigger, splitLines, splitWords, reduced, initReveals, idle } from '../core/motion.js';
 import { $, $$, cld, cldVideo, srcset, esc } from '../core/utils.js';
 import { icons } from '../core/icons.js';
-import { productCard, testimonialCard, bindProductOpeners } from '../core/components.js';
+import { productCard, testimonialCard, bindProductOpeners, skeletonCards } from '../core/components.js';
 import { THICKNESS_GUIDE, SPACES, img } from '../core/defaults.js';
 
 let DATA;
@@ -36,15 +36,18 @@ function renderBento() {
     </article>`).join('');
 }
 
-function renderTestimonials(list) {
+let tPending = false;
+function renderTestimonials(list, { skeleton = false } = {}) {
   const box = $('[data-testimonials-preview]');
+  tPending = skeleton;
+  if (skeleton) { box.innerHTML = skeletonCards(3); return; }
   if (list.length) {
     box.innerHTML = `<div class="t-slider" data-lenis-prevent-horizontal>${list.slice(0, 8).map((t, i) => testimonialCard(t, { feature: i === 0 })).join('')}</div>`;
   } else {
     box.innerHTML = `
       <div class="t-empty reveal">
         <span class="te-icon">${icons.quote}</span>
-        <div><h3>Your experience builds our name.</h3><p>We are collecting reviews from our customers. Bought from Liveteck? Tell others how our materials and service worked for you.</p></div>
+        <div><h3 class="h3">Your experience builds our name.</h3><p>We are collecting reviews from our customers. Bought from Liveteck? Tell others how our materials and service worked for you.</p></div>
         <a class="btn" href="/testimonials.html#share">Share your experience ${icons.arrow}</a>
       </div>`;
   }
@@ -79,27 +82,44 @@ function initThickness() {
 }
 
 /* ---------- hero ---------- */
-function setHeroVideo(s) {
+const POSTER_W = [640, 960, 1280, 1920];
+function setHeroPoster(s) {
+  const im = $('.hero-poster');
+  if (!im || !s.heroPoster || im.dataset.src === s.heroPoster || /liveteck\/brand\/hero-poster$/.test(s.heroPoster)) return;
+  im.dataset.src = s.heroPoster;
+  im.srcset = POSTER_W.map(w => `${cld(s.heroPoster, `w_${w},c_limit`)} ${w}w`).join(', ');
+  im.src = cld(s.heroPoster, 'w_1280,c_limit');
+}
+
+/** The hero film loads only after the intro + page load, so it never competes with first paint. */
+function startHeroVideo(s) {
   const v = $('[data-hero-video]');
-  if (!v || !s.heroVideo) return;
-  const w = innerWidth < 760 ? 'w_960' : 'w_1920';
-  const src = cldVideo(s.heroVideo, w);
+  const conn = navigator.connection;
+  if (!v || !s.heroVideo || reduced || conn?.saveData || /(^|-)2g$/.test(conn?.effectiveType || '')) return;
+  const src = cldVideo(s.heroVideo, innerWidth < 760 ? 'w_960' : 'w_1920');
   if (v.dataset.src === src) return;
   v.dataset.src = src;
-  if (s.heroPoster) v.poster = cld(s.heroPoster, `${w},c_limit`);
+  v.addEventListener('playing', () => v.classList.add('is-playing'), { once: true });
+  v.addEventListener('error', () => { v.removeAttribute('src'); v.load(); }, { once: true });
+  v.preload = 'auto';
+  v.autoplay = true;
   v.src = src;
-  v.addEventListener('error', () => v.removeAttribute('src'), { once: true });
   v.play?.().catch(() => {});
 }
 
+let heroShown = false;
 function heroIntro() {
-  const title = $('[data-hero-title]');
-  const lines = splitLines(title);
+  const lines = splitLines($('[data-hero-title]'));
+  heroShown = true;
   if (reduced) return;
+  // Start states are painted by CSS from the first frame (html:not(.reduced) .hero …), so nothing
+  // flashes before this runs. GSAP reads a CSS transform back as px `y`, so tweens reset y explicitly.
+  // The subtitle stays still: it's the LCP text, and Chrome only counts an element once its entrance
+  // animation has finished.
   const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-  tl.from('[data-hero-media] video', { scale: 1.25, duration: 2.4, ease: 'power3.out' }, 0)
-    .from(lines, { yPercent: 115, duration: 1.4, stagger: 0.12 }, 0.15)
-    .from('[data-hero-fade]', { y: 30, opacity: 0, duration: 1.2, stagger: 0.1 }, 0.45)
+  tl.fromTo('[data-hero-media] > *', { scale: 1.22 }, { scale: 1.08, duration: 2.4, ease: 'power3.out' }, 0)
+    .fromTo(lines, { y: 0, yPercent: 115 }, { y: 0, yPercent: 0, duration: 1.4, stagger: 0.12 }, 0.15)
+    .fromTo('[data-hero-fade]', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, stagger: 0.1 }, 0.45)
     .from('.hero-scroll', { opacity: 0, duration: 1 }, 1);
 }
 
@@ -109,12 +129,21 @@ function heroScroll() {
   gsap.to('.hero-content', { yPercent: -14, opacity: 0.15, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'center center', end: 'bottom top', scrub: true } });
 }
 
-/* ---------- statement ---------- */
+/* ---------- statement: words light up as you scroll ---------- */
 function statement() {
   const el = $('[data-words]');
-  const words = splitWords(el);
-  if (reduced) { gsap.set(words, { opacity: 1 }); return; }
-  gsap.to(words, { opacity: 1, stagger: 0.04, ease: 'none', scrollTrigger: { trigger: el, start: 'top 82%', end: 'bottom 42%', scrub: 0.6 } });
+  const words = [...splitWords(el)];
+  if (reduced) { words.forEach(w => w.classList.add('on')); return; }
+  let lit = -1;
+  ScrollTrigger.create({
+    trigger: el, start: 'top 82%', end: 'bottom 42%', scrub: true,
+    onUpdate: (self) => {
+      const n = Math.round(self.progress * words.length);
+      if (n === lit) return;
+      lit = n;
+      words.forEach((w, i) => w.classList.toggle('on', i < n));
+    },
+  });
 }
 
 /* ---------- anatomy: exploding plywood ---------- */
@@ -128,9 +157,13 @@ function anatomy() {
   const textureUrl = cld(img('brand/veneer-texture'), 'w_900,c_limit');
   layers.forEach((l, i) => gsap.set(l, { z: (n - 1 - i) * 13 }));
   // real veneer texture on the face layers when available
-  const probe = new Image();
-  probe.onload = () => layers.filter(l => l.classList.contains('face')).forEach(l => { l.style.setProperty('--img', `url(${textureUrl})`); l.classList.add('has-img'); });
-  probe.src = textureUrl;
+  const loadTexture = () => {
+    const probe = new Image();
+    probe.onload = () => layers.filter(l => l.classList.contains('face')).forEach(l => { l.style.setProperty('--img', `url(${textureUrl})`); l.classList.add('has-img'); });
+    probe.src = textureUrl;
+  };
+  const tio = new IntersectionObserver(([e]) => { if (e.isIntersecting) { tio.disconnect(); loadTexture(); } }, { rootMargin: '600px' });
+  tio.observe(section);
 
   let current = 0;
   const setStep = (i) => {
@@ -201,21 +234,40 @@ function audienceHover() {
   addEventListener('mousemove', e => { xTo(e.clientX + 30); yTo(e.clientY - 180); });
 }
 
+// First paint only needs the hero: the sections below it are built in short idle slices
+// (one long task would block input while the page is loading).
+let rendered = Promise.resolve();
+const inSlices = (jobs) => jobs.reduce((p, job) => p.then(() => idle(() => { job(); initReveals(); }, 800)), Promise.resolve());
+
 boot('home', {
   render(data, first) {
     DATA = data;
-    renderCategories(data.categories);
-    renderFeatured(data.products, data.categories);
-    renderTestimonials(data.testimonials);
-    if (first) { renderBento(); initThickness(); bindProductOpeners(() => DATA); }
+    const jobs = [
+      () => renderCategories(data.categories),
+      () => renderFeatured(data.products, data.categories),
+      () => renderTestimonials(data.testimonials, { skeleton: first && !data.fromCache }),
+    ];
+    if (first) { bindProductOpeners(() => DATA); jobs.push(renderBento, initThickness); }
     if (!first && data.settings.heroTitle) {
       const h = $('[data-hero-title]');
       const html = data.settings.heroTitle.replace(/\.\s*<em>/i, '.<br><em>');
-      if (h.dataset.html !== html) { h.dataset.html = html; h.removeAttribute('data-split'); h.innerHTML = html; splitLines(h); }
+      const norm = (x) => x.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (norm(html) !== norm(h.innerHTML)) {
+        h.removeAttribute('data-split'); h.innerHTML = html;
+        const lines = splitLines(h);
+        if (heroShown && !reduced) gsap.fromTo(lines, { y: 0, yPercent: 115 }, { y: 0, yPercent: 0, duration: 1.2, stagger: 0.1, ease: 'expo.out' });
+      }
     }
-    setHeroVideo(data.settings);
+    setHeroPoster(data.settings);
+    rendered = first ? inSlices(jobs) : rendered.then(() => { jobs.forEach(j => j()); initReveals(); });
   },
   intro: heroIntro,
+  loaded(data) {
+    rendered.then(() => { if (tPending) { renderTestimonials(data.testimonials); initReveals(); } });
+    whenEngaged().then(() => startHeroVideo(data.settings));
+  },
+  // scroll scenes measure the sections, so they wait for them to be built
+  ready: () => rendered,
   motion() {
     heroScroll();
     statement();

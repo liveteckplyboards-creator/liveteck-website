@@ -61,3 +61,9 @@ firebase deploy --only hosting,firestore:rules
 ## Media (Cloudinary `duswrz4u`, preset `liveteck`)
 
 `liveteck/products/*`, `liveteck/spaces/*`, `liveteck/brand/*`, `liveteck/video/*`. Delivery URLs get `f_auto,q_auto` plus a width, added automatically by `cld()` in `src/js/core/utils.js`.
+
+## Production domain
+
+Set the `SITE_URL` environment variable in Vercel (e.g. `https://www.liveteck.in`). It is used for the canonical URLs, `og:url`, `sitemap.xml` and `robots.txt` (default `https://liveteck-website.vercel.app`).
+
+Fonts in `public/fonts` are served with a one-year immutable cache — give a changed font file a new name.

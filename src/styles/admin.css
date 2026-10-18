@@ -1,10 +1,11 @@
+@import './fonts.css';
 /* Liveteck admin dashboard */
 :root {
   --forest-950: #03140d; --forest-900: #062619; --forest-800: #0a3a27; --forest-700: #0b4a32; --forest-600: #11603f;
   --gold-600: #9c7128; --gold-500: #b68734; --gold-300: #dcbb7c; --gold-100: #f2e5c6;
   --ivory: #f7f3ea; --ivory-2: #efe8da; --ink: #12160f; --ink-2: #2a2f26; --muted: #667062;
   --line: #e4ddcf; --card: #fff; --danger: #b3261e; --ok: #1f7a45; --info: #2a5db0; --warn: #9c6a12;
-  --font-display: 'Fraunces', Georgia, serif; --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-display: 'Fraunces', 'Fraunces Fallback', Georgia, serif; --font-sans: 'Archivo', 'Archivo Fallback', Arial, sans-serif;
   --r: 14px; --shadow: 0 1px 2px rgba(6,38,25,.05), 0 8px 24px -12px rgba(6,38,25,.15);
 }
 * { box-sizing: border-box; }

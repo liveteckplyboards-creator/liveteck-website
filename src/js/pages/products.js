@@ -36,7 +36,7 @@ function renderCatalogue() {
       <div class="product-grid ${items.length === 1 ? 'product-grid--single' : items.length === 2 ? 'product-grid--2' : 'product-grid--3'}">${items.map(p => productCard(p, cats)).join('')}</div>
     </div>`).join('') : `<div class="empty-state"><h3 class="h3">No products match “${esc(term)}”.</h3><p style="margin-top:12px">Try another search, or <button class="link-arrow" data-enquire>ask our team</button>.</p></div>`;
   initReveals($('[data-catalogue]'));
-  ScrollTrigger.refresh();
+  if (ScrollTrigger?.getAll().length) ScrollTrigger.refresh();
 }
 
 function setFilter(id, scroll = true) {
@@ -72,12 +72,19 @@ boot('products', {
       bindProductOpeners(() => DATA);
       $('[data-filters]').addEventListener('click', e => { const b = e.target.closest('[data-filter]'); if (b) setFilter(b.dataset.filter); });
       let t;
-      $('[data-search]').addEventListener('input', e => { clearTimeout(t); t = setTimeout(() => { term = e.target.value; renderCatalogue(); }, 160); });
+      $('[data-search]').addEventListener('input', e => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          term = e.target.value;
+          // a search looks across the whole range, not just the selected chip
+          if (term.trim() && active !== 'all') setFilter('all', false); else renderCatalogue();
+        }, 160);
+      });
       addEventListener('hashchange', handleHash);
     }
   },
   intro() {
-    if (!reduced) gsap.from('.page-hero .ph-media img', { scale: 1.2, duration: 2.2, ease: 'power3.out' });
+    if (!reduced) gsap.fromTo('.page-hero .ph-media', { scale: 1.2 }, { scale: 1, duration: 2.2, ease: 'power3.out' });
     handleHash();
   },
 });
