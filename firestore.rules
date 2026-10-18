@@ -1,0 +1,68 @@
+rules_version = '2';
+
+// Liveteck Ply & Boards — Firestore security rules
+// Public: read catalogue/settings/approved testimonials, create enquiries & pending reviews.
+// Admin (liveteckplyboards@gmail.com): full access.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == 'liveteckplyboards@gmail.com';
+    }
+
+    function str(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /products/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /testimonials/{id} {
+      allow read: if isAdmin() || resource.data.status == 'approved';
+      allow create: if isAdmin() || (
+        request.resource.data.keys().hasOnly(['name', 'company', 'role', 'city', 'message', 'rating', 'status', 'source', 'createdAt'])
+        && str(request.resource.data.name, 1, 80)
+        && str(request.resource.data.message, 20, 1200)
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.status == 'pending'
+        && request.resource.data.source == 'website'
+        && request.resource.data.createdAt == request.time
+      );
+      allow update, delete: if isAdmin();
+    }
+
+    match /enquiries/{id} {
+      allow create: if isAdmin() || (
+        request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'city', 'product', 'message', 'page', 'status', 'createdAt'])
+        && str(request.resource.data.name, 1, 100)
+        && str(request.resource.data.phone, 6, 20)
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time
+      );
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /media/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

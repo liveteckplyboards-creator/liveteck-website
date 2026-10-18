@@ -1,0 +1,49 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>{{title}}</title>
+<meta name="description" content="{{desc}}" />
+<meta name="theme-color" content="#062619" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Liveteck Ply &amp; Boards" />
+<meta property="og:title" content="{{title}}" />
+<meta property="og:description" content="{{desc}}" />
+<meta property="og:image" content="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_1200,h_630,c_fill/liveteck/brand/hero-poster" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
+<link rel="apple-touch-icon" href="/brand/liveteck-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&display=swap" rel="stylesheet" />
+<script>
+  document.documentElement.classList.remove('no-js');
+  // Opening intro: every fresh visit to Home; other pages only on the first page of a visit; never on internal navigation.
+  try {
+    var isHome = /^\/(index\.html)?$/.test(location.pathname);
+    var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || sessionStorage.getItem('lt-transition') || (!isHome && sessionStorage.getItem('lt-visited'))) document.documentElement.classList.add('no-loader');
+    else document.documentElement.classList.add('intro-active');
+  } catch (e) {}
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('reduced');
+  // Safety net: if the app script fails to start, never leave content hidden behind the loader/reveals.
+  setTimeout(function () { if (!window.__ltBooted) { document.documentElement.classList.add('reduced', 'no-loader', 'lt-fallback'); document.documentElement.classList.remove('intro-active'); } }, 5000);
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HomeAndConstructionBusiness",
+  "name": "Liveteck Ply & Boards",
+  "description": "Plywood, block boards, flexi plywood, veneers, laminates and flush doors in Kakinada, Andhra Pradesh.",
+  "foundingDate": "2015",
+  "founder": { "@type": "Person", "name": "Amith Jain" },
+  "telephone": "+91-99121-53030",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Temple Street, Beside Pydha Kalyana Mandapam",
+    "addressLocality": "Kakinada",
+    "addressRegion": "Andhra Pradesh",
+    "addressCountry": "IN"
+  },
+  "logo": "https://res.cloudinary.com/duswrz4u/image/upload/liveteck/brand/liveteck-logo.png"
+}
+</script>

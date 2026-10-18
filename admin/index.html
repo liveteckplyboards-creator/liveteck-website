@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin · Liveteck Ply &amp; Boards</title>
+  <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..900&family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <template id="tpl-logo"><!-- @include logo.svg --></template>
+
+  <!-- login -->
+  <section class="login" id="login" hidden>
+    <div class="login-art">
+      <div class="logo" data-logo></div>
+      <div>
+        <h1>Manage your <em>website</em>.</h1>
+        <p>Products, enquiries, testimonials, media and business details — all in one place.</p>
+      </div>
+      <span class="small" style="opacity:.6">Liveteck Ply &amp; Boards · Admin</span>
+    </div>
+    <div class="login-form-wrap">
+      <form class="login-card form" id="login-form" novalidate>
+        <div>
+          <h2>Sign in</h2>
+          <p class="muted" style="margin-top:6px">Use your Liveteck admin account.</p>
+        </div>
+        <div class="field"><label for="lg-email">Email</label><input id="lg-email" name="email" type="email" autocomplete="username" required /></div>
+        <div class="field"><label for="lg-pass">Password</label><input id="lg-pass" name="password" type="password" autocomplete="current-password" required /></div>
+        <p class="error-text" id="login-error" hidden></p>
+        <button class="btn btn--block" type="submit" style="height:48px">Sign in</button>
+        <button class="btn btn--ghost btn--block" type="button" id="forgot">Forgot password?</button>
+        <a class="small muted" href="/" style="text-align:center">← Back to website</a>
+      </form>
+    </div>
+  </section>
+
+  <!-- app -->
+  <div class="shell" id="app" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="logo" data-logo></div>
+      <div class="tag">Admin dashboard</div>
+      <nav id="nav"></nav>
+      <div class="sb-foot">
+        <div class="who" id="who"></div>
+        <a class="nav-btn" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 17 17 7M8 7h9v9"/></svg>View website</a>
+        <button class="nav-btn" id="logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menu-btn" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+        <h1 id="view-title">Overview</h1>
+        <div class="spacer"></div>
+        <div id="view-actions" class="row"></div>
+      </header>
+      <main class="content" id="view"></main>
+    </div>
+  </div>
+
+  <div class="loading" id="boot"><div class="spinner"></div></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script type="module" src="/src/js/admin/main.js"></script>
+</body>
+</html>
