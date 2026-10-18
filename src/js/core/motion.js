@@ -180,7 +180,7 @@ export function initPageTransitions() {
   try {
     if (sessionStorage.getItem('lt-transition')) {
       sessionStorage.removeItem('lt-transition');
-      gsap.fromTo(curtain, { scaleY: 1, transformOrigin: 'top' }, { scaleY: 0, duration: 0.9, ease: 'expo.inOut', delay: 0.05 });
+      gsap.fromTo(curtain, { scaleY: 1, transformOrigin: 'top' }, { scaleY: 0, duration: 0.9, ease: 'expo.inOut', delay: 0.05, onComplete: () => document.documentElement.classList.remove('curtain-in') });
     }
   } catch { /* ignore */ }
   document.addEventListener('click', e => {

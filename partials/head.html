@@ -37,6 +37,8 @@
     try {
       var isHome = /^\/(index(\.html)?)?$/.test(location.pathname);
       if (!isHome || reduce || sessionStorage.getItem('lt-transition') || sessionStorage.getItem('lt-intro')) d.classList.add('no-loader');
+      // arriving through an internal link: the curtain is already down at first paint, JS lifts it (one wipe, no flash)
+      if (sessionStorage.getItem('lt-transition') && !reduce) d.classList.add('curtain-in');
       else { d.classList.add('intro-active'); sessionStorage.setItem('lt-intro', '1'); }
     } catch (e) { d.classList.add('no-loader'); }
     // Safety net: if the app script fails to start, never leave content hidden.

@@ -121,6 +121,7 @@ Lighthouse 12.8 ran against `vite preview` with default mobile settings (simulat
 | QA-042 | Products | All | UX | Medium | With a category chip selected, searching "flexi" said "No products match" | Visitors can't find products that exist | A search covers the whole range (filter switches to All) | Verified |
 | QA-043 | Home | Desktop | CLS | High | CLS 0.178: locking scroll for the intro removed the scrollbar, widening the viewport ~15 px and moving the centred intro layers | Page jumps on arrival | `scrollbar-gutter: stable` on `html` (also stops the jump when the modal or drawer opens) | Verified (CLS 0.001, desktop Perf 97) |
 
+| QA-044 | All | All | Animation | High | Clicking a menu link showed the page-transition shade twice: the new page painted without it, then JS raised it again before wiping | Looks glitchy on every navigation | The arriving page has the curtain down from its first frame (class set by the head script), and JS only lifts it: one continuous wipe | Verified (filmstrip) |
 <!-- MORE_ISSUES -->
 
 ---
