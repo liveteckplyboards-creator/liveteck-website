@@ -216,24 +216,34 @@
           <h2 class="h2" id="process-title" data-split>From enquiry to <em>delivery</em>.</h2>
         </div>
         <div class="steps" data-steps>
-          <span class="step-line" data-step-line></span>
-          <div class="step reveal"><span class="dot">01</span><h3>Tell us your need</h3><p>Call, WhatsApp or send an enquiry with your project and quantities.</p></div>
-          <div class="step reveal"><span class="dot">02</span><h3>Get expert advice</h3><p>We recommend the right material, thickness and finish for each part.</p></div>
-          <div class="step reveal"><span class="dot">03</span><h3>Choose &amp; confirm</h3><p>See the products in our store and confirm your order with a clear quote.</p></div>
-          <div class="step reveal"><span class="dot">04</span><h3>Collect or deliver</h3><p>Pick up from Temple Street, Kakinada, or ask us about delivery to your site.</p></div>
+          <span class="step-line" data-line aria-hidden="true"><i class="line-tip"></i></span>
+          <div class="step" data-line-item><span class="dot" data-line-dot>01</span><div class="step-copy"><h3>Tell us your need</h3><p>Call, WhatsApp or send an enquiry with your project and quantities.</p></div></div>
+          <div class="step" data-line-item><span class="dot" data-line-dot>02</span><div class="step-copy"><h3>Get expert advice</h3><p>We recommend the right material, thickness and finish for each part.</p></div></div>
+          <div class="step" data-line-item><span class="dot" data-line-dot>03</span><div class="step-copy"><h3>Choose &amp; confirm</h3><p>See the products in our store and confirm your order with a clear quote.</p></div></div>
+          <div class="step" data-line-item><span class="dot" data-line-dot>04</span><div class="step-copy"><h3>Collect or deliver</h3><p>Pick up from Temple Street, Kakinada, or ask us about delivery to your site.</p></div></div>
         </div>
       </div>
     </section>
 
-    <!-- ============ TESTIMONIALS PREVIEW ============ -->
-    <section class="section bg-ivory cv" aria-labelledby="tst-title">
+    <!-- ============ TESTIMONIALS ============ -->
+    <section class="section bg-ivory cv" id="testimonials" aria-labelledby="tst-title">
       <div class="container">
         <div class="section-head section-head--split">
           <div>
             <span class="eyebrow reveal">Testimonials</span>
             <h2 class="h2" id="tst-title" data-split style="margin-top:22px">Satisfaction,<br><em>sheet</em> after sheet.</h2>
           </div>
-          <div class="reveal"><a class="link-arrow" href="/testimonials.html">All testimonials <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+          <div class="reveal">
+            <p class="lead">Genuine words from homeowners, carpenters, designers and builders who work with Liveteck.</p>
+            <div class="t-head-actions">
+              <a class="link-arrow" href="/testimonials.html">See all reviews <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+              <button class="btn btn--sm" type="button" data-review-open>Write a review <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="arrow"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+              <div class="t-nav" data-t-nav hidden>
+                <button class="t-arrow" type="button" data-t-step="-1" aria-label="Previous reviews"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+                <button class="t-arrow" type="button" data-t-step="1" aria-label="Next reviews"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+              </div>
+            </div>
+          </div>
         </div>
         <div data-testimonials-preview></div>
       </div>
@@ -278,6 +288,55 @@
       </div>
     </section>
   </main>
+
+  <div class="modal" id="review-modal" role="dialog" aria-modal="true" inert aria-labelledby="rv-title" aria-hidden="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" data-lenis-prevent>
+      <button class="drawer-close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <span class="eyebrow">Share your experience</span>
+      <h3 id="rv-title">Bought from Liveteck?</h3>
+      <p class="muted" style="margin-bottom:24px">Tell us how our products and service worked for you. Reviews are checked by our team before they appear on the website.</p>
+      <form class="form" data-review-form novalidate>
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="field">
+          <span class="field-label">Your rating</span>
+          <div class="star-input" role="radiogroup" aria-label="Rating">
+            <input type="radio" name="rating" id="r5" value="5" checked /><label for="r5" title="5 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span class="sr-only">5 stars</span></label>
+            <input type="radio" name="rating" id="r4" value="4" /><label for="r4" title="4 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span class="sr-only">4 stars</span></label>
+            <input type="radio" name="rating" id="r3" value="3" /><label for="r3" title="3 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span class="sr-only">3 stars</span></label>
+            <input type="radio" name="rating" id="r2" value="2" /><label for="r2" title="2 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span class="sr-only">2 stars</span></label>
+            <input type="radio" name="rating" id="r1" value="1" /><label for="r1" title="1 star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span class="sr-only">1 star</span></label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="rv-name">Name <span class="req">*</span></label><input id="rv-name" name="name" required maxlength="60" autocomplete="name" /><span class="err">Please enter your name</span></div>
+          <div class="field"><label for="rv-city">City</label><input id="rv-city" name="city" maxlength="40" autocomplete="address-level2" /></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="rv-role">You are a…</label>
+            <select id="rv-role" name="role"><option value="">Select</option><option>Homeowner</option><option>Interior Designer</option><option>Architect</option><option>Contractor</option><option>Builder</option><option>Carpenter</option><option>Furniture Manufacturer</option><option>Business owner</option></select>
+          </div>
+          <div class="field"><label for="rv-company">Company (optional)</label><input id="rv-company" name="company" maxlength="60" autocomplete="organization" /></div>
+        </div>
+        <div class="field">
+          <span class="field-label">Your photo <span class="opt">(optional)</span></span>
+          <div class="photo-pick" data-photo-pick>
+            <span class="pp-avatar" data-pp-preview aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>
+            <div class="pp-text">
+              <label class="pp-btn" for="rv-photo">Upload a photo</label>
+              <button class="pp-remove" type="button" data-pp-remove hidden>Remove</button>
+              <span class="pp-hint" data-pp-hint>JPG, PNG or WebP · up to 8 MB. Shown as a small round picture with your review.</span>
+            </div>
+            <input class="sr-only" type="file" id="rv-photo" accept="image/jpeg,image/png,image/webp" data-pp-input />
+          </div>
+        </div>
+        <div class="field"><label for="rv-msg">Your review <span class="req">*</span></label><textarea id="rv-msg" name="message" required minlength="20" maxlength="1200" placeholder="What did you buy, and how did it work for you?"></textarea><span class="err">Please write at least 20 characters</span></div>
+        <label class="consent"><input type="checkbox" name="consent" required /> <span>I agree that Liveteck Ply &amp; Boards may publish this review with my name, role and city.</span></label>
+        <div class="form-status" aria-live="polite"></div>
+        <button class="btn btn--block" type="submit">Submit review</button>
+      </form>
+    </div>
+  </div>
 
   <!-- @include footer.html -->
   <script type="module" src="/src/js/pages/home.js"></script>

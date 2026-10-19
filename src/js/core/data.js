@@ -38,16 +38,41 @@ export async function loadData() {
     list('products'),
     withTimeout(getDocs(query(collection(db, 'testimonials'), where('status', '==', 'approved')))).then(s => s.docs.map(d => ({ id: d.id, ...d.data() }))),
   ]);
-  const out = { ...base, fromCache: false, live: true };
-  if (settingsSnap.status === 'fulfilled' && settingsSnap.value.exists()) { const { updatedAt, ...st } = settingsSnap.value.data(); out.settings = { ...SETTINGS, ...st }; }
-  if (categories.status === 'fulfilled' && categories.value.length) out.categories = categories.value.sort(byOrder);
-  if (products.status === 'fulfilled' && products.value.length) out.products = products.value.filter(p => p.published !== false).sort(byOrder);
-  if (testimonials.status === 'fulfilled') {
-    out.testimonials = testimonials.value.sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-  }
   if ([settingsSnap, categories, products, testimonials].every(r => r.status === 'rejected')) throw new Error('Firestore unreachable');
+  const val = (r) => (r.status === 'fulfilled' ? r.value : undefined);
+  const st = val(settingsSnap);
+  return shape(base, {
+    settings: st?.exists() ? (({ updatedAt, ...x }) => x)(st.data()) : undefined,
+    categories: val(categories), products: val(products), testimonials: val(testimonials),
+  });
+}
+
+/** Same rules for one-off loads and live updates: published only, sorted, empty → defaults; cached for the next visit. */
+function shape(base, { settings, categories, products, testimonials }) {
+  const out = { ...base, fromCache: false, live: true };
+  if (settings) { const { id, ...st } = settings; out.settings = { ...SETTINGS, ...st }; }
+  if (categories?.length) out.categories = [...categories].sort(byOrder);
+  if (products?.length) out.products = products.filter(p => p.published !== false).sort(byOrder);
+  if (testimonials) out.testimonials = [...testimonials].sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
   writeCache({ settings: out.settings, categories: out.categories, products: out.products, testimonials: out.testimonials.map(({ createdAt, ...t }) => t) });
   return out;
+}
+
+/**
+ * Real-time updates: whatever the admin saves (products, categories, settings, approved reviews)
+ * is pushed to open pages. onData receives the full, shaped data set after each change.
+ */
+export async function watchData(onData) {
+  const { subscribe } = await import('./fs-live.js');
+  const parts = {};
+  const names = ['settings', 'categories', 'products', 'testimonials'];
+  let timer;
+  return subscribe((name, value) => {
+    parts[name] = value;
+    if (!names.every(n => n in parts)) return; // wait for the first snapshot of each
+    clearTimeout(timer);
+    timer = setTimeout(() => onData(shape(initialData(), { ...parts, settings: parts.settings || undefined })), 250);
+  }, (err) => { if (import.meta.env.DEV) console.warn('[liveteck] live updates stopped', err); });
 }
 
 const clean = (v, max) => String(v ?? '').trim().slice(0, max);
@@ -67,6 +92,9 @@ export async function submitEnquiry(f) {
   }), 15000);
 }
 
+/** Only our own Cloudinary uploads are accepted as a reviewer photo (mirrors firestore.rules). */
+const PHOTO_RE = /^https:\/\/res\.cloudinary\.com\/duswrz4u\/image\/upload\/[\w\/.,-]{1,300}$/;
+
 export async function submitTestimonial(f) {
   const { db, collection, addDoc, serverTimestamp } = await fb();
   return withTimeout(addDoc(collection(db, 'testimonials'), {
@@ -76,6 +104,7 @@ export async function submitTestimonial(f) {
     city: clean(f.city, 80),
     message: clean(f.message, 1200),
     rating: Math.min(5, Math.max(1, parseInt(f.rating, 10) || 5)),
+    ...(PHOTO_RE.test(f.photo || '') ? { photo: f.photo } : {}),
     status: 'pending',
     source: 'website',
     createdAt: serverTimestamp(),

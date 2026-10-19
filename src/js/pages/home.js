@@ -1,8 +1,9 @@
 import { boot, whenEngaged } from '../core/app.js';
-import { gsap, ScrollTrigger, splitLines, splitWords, reduced, initReveals, idle } from '../core/motion.js';
+import { gsap, ScrollTrigger, splitLines, splitWords, reduced, initReveals, idle, scrollLine, lenis } from '../core/motion.js';
 import { $, $$, cld, cldVideo, srcset, esc } from '../core/utils.js';
 import { icons } from '../core/icons.js';
-import { productCard, testimonialCard, bindProductOpeners, skeletonCards } from '../core/components.js';
+import { productCard, testimonialCard, bindProductOpeners, skeletonCards, stars } from '../core/components.js';
+import { initReviewForm } from '../core/review.js';
 import { THICKNESS_GUIDE, SPACES, img } from '../core/defaults.js';
 
 let DATA;
@@ -39,18 +40,46 @@ function renderBento() {
 let tPending = false;
 function renderTestimonials(list, { skeleton = false } = {}) {
   const box = $('[data-testimonials-preview]');
+  const nav = $('[data-t-nav]');
   tPending = skeleton;
-  if (skeleton) { box.innerHTML = skeletonCards(3); return; }
+  if (skeleton) { box.innerHTML = skeletonCards(3); nav.hidden = true; return; }
   if (list.length) {
-    box.innerHTML = `<div class="t-slider" data-lenis-prevent-horizontal>${list.slice(0, 8).map((t, i) => testimonialCard(t, { feature: i === 0 })).join('')}</div>`;
+    const avg = list.reduce((s, t) => s + (t.rating || 5), 0) / list.length;
+    const n = list.length;
+    box.innerHTML = `
+      <div class="t-summary reveal" aria-label="Average rating ${avg.toFixed(1)} out of 5 from ${n} review${n > 1 ? 's' : ''}">
+        <b>${avg.toFixed(1)}</b>
+        <div>${stars(Math.round(avg))}<span>${n} verified review${n > 1 ? 's' : ''}</span></div>
+      </div>
+      <div class="t-slider" data-t-slider data-lenis-prevent-horizontal>${list.slice(0, 8).map((t, i) => testimonialCard(t, { feature: i === 0 })).join('')}</div>`;
+    const slider = $('[data-t-slider]', box);
+    const sync = () => {
+      const max = slider.scrollWidth - slider.clientWidth;
+      nav.hidden = max < 8;
+      $$('[data-t-step]', nav).forEach(b => { b.disabled = b.dataset.tStep < 0 ? slider.scrollLeft < 8 : slider.scrollLeft > max - 8; });
+    };
+    slider.addEventListener('scroll', sync, { passive: true });
+    new ResizeObserver(sync).observe(slider);
+    sync();
   } else {
+    nav.hidden = true;
     box.innerHTML = `
       <div class="t-empty reveal">
         <span class="te-icon">${icons.quote}</span>
         <div><h3 class="h3">Your experience builds our name.</h3><p>We are collecting reviews from our customers. Bought from Liveteck? Tell others how our materials and service worked for you.</p></div>
-        <a class="btn" href="/testimonials.html#share">Share your experience ${icons.arrow}</a>
+        <button class="btn" type="button" data-review-open>Write a review ${icons.arrow}</button>
       </div>`;
   }
+}
+function initTestimonialNav() {
+  $('[data-t-nav]').addEventListener('click', e => {
+    const b = e.target.closest('[data-t-step]');
+    const slider = $('[data-t-slider]');
+    if (!b || !slider) return;
+    const card = $('.t-card', slider);
+    const step = card ? card.getBoundingClientRect().width + 24 : slider.clientWidth * 0.8;
+    slider.scrollBy({ left: step * +b.dataset.tStep, behavior: reduced ? 'auto' : 'smooth' });
+  });
 }
 
 /* ---------- thickness guide ---------- */
@@ -189,36 +218,26 @@ function anatomy() {
     .to($$('.ply-label', stack), { opacity: 0, duration: 0.1 }, 0.8);
 }
 
-/* ---------- horizontal categories ---------- */
+/* ---------- horizontal categories (pinned, desktop and phones) ---------- */
 function hscroll() {
   const section = $('[data-hscroll]');
   const track = $('[data-hscroll-track]');
   const bar = $('[data-hs-progress]');
-  const mm = gsap.matchMedia();
-  mm.add('(min-width: 981px)', () => {
-    if (reduced) return;
-    const dist = () => Math.max(0, track.scrollWidth - innerWidth);
-    gsap.to(track, {
-      x: () => -dist(), ease: 'none',
-      scrollTrigger: {
-        trigger: section, start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1,
-        onUpdate: self => gsap.set(bar, { scaleX: self.progress }),
-      },
-    });
-    gsap.from($$('.cat-card', track), { y: 80, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: section, start: 'top 70%' } });
+  if (reduced) return;
+  section.classList.add('is-pinned');
+  const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+  gsap.to(track, {
+    x: () => -dist(), ease: 'none',
+    scrollTrigger: {
+      trigger: section, start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1,
+      onUpdate: self => gsap.set(bar, { scaleX: self.progress }),
+    },
   });
+  gsap.from($$('.cat-card', track), { y: 80, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: section, start: 'top 70%' } });
 }
 
 function stepsLine() {
-  const line = $('[data-step-line]');
-  const steps = $$('.step');
-  ScrollTrigger.create({
-    trigger: '[data-steps]', start: 'top 75%', end: 'bottom 55%', scrub: true,
-    onUpdate: self => {
-      gsap.set(line, { scaleX: self.progress });
-      steps.forEach((s, i) => s.classList.toggle('is-on', self.progress >= i / steps.length));
-    },
-  });
+  scrollLine($('[data-steps]'), { vertical: () => !isDesktop(), start: 'top 75%', end: 'bottom 60%' });
 }
 
 function audienceHover() {
@@ -247,7 +266,7 @@ boot('home', {
       () => renderFeatured(data.products, data.categories),
       () => renderTestimonials(data.testimonials, { skeleton: first && !data.fromCache }),
     ];
-    if (first) { bindProductOpeners(() => DATA); jobs.push(renderBento, initThickness); }
+    if (first) { bindProductOpeners(() => DATA); initReviewForm(); initTestimonialNav(); jobs.push(renderBento, initThickness); }
     if (!first && data.settings.heroTitle) {
       const h = $('[data-hero-title]');
       const html = data.settings.heroTitle.replace(/\.\s*<em>/i, '.<br><em>');
@@ -263,7 +282,14 @@ boot('home', {
   },
   intro: heroIntro,
   loaded(data) {
-    rendered.then(() => { if (tPending) { renderTestimonials(data.testimonials); initReveals(); } });
+    rendered.then(() => {
+      if (tPending) { renderTestimonials(data.testimonials); initReveals(); }
+      // old /testimonials links land here: bring the reviews into view
+      if (location.hash === '#testimonials') {
+        const go = (immediate) => lenis ? lenis.scrollTo('#testimonials', { offset: -80, immediate, onComplete: () => !immediate && go(true) }) : $('#testimonials').scrollIntoView();
+        setTimeout(() => go(false), 300);
+      }
+    });
     whenEngaged().then(() => startHeroVideo(data.settings));
   },
   // scroll scenes measure the sections, so they wait for them to be built

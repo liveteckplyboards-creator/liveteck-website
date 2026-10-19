@@ -35,7 +35,6 @@ export function initHeader(page) {
   $$('.mobile-menu nav a').forEach(a => { if (new URL(a.href).pathname === location.pathname) a.setAttribute('aria-current', 'page'); });
 
   let last = 0;
-  const bar = $('.mobile-bar');
   const toTop = $('[data-to-top]');
   const touch = matchMedia('(hover: none)').matches;
   toTop?.addEventListener('click', () => {
@@ -50,7 +49,6 @@ export function initHeader(page) {
     const hide = y > 400 && y > last && !document.body.classList.contains('menu-open');
     header.classList.toggle('is-hidden', hide);
     document.body.classList.toggle('header-hidden', hide);
-    bar?.classList.toggle('on', y > 320);
     // phones: only offer it when the visitor scrolls back up (or reaches the end), so it never sits on what they're reading
     const wantsTop = !touch || y < last || y + innerHeight > document.documentElement.scrollHeight - 160;
     toTop?.classList.toggle('on', y > innerHeight * 1.1 && wantsTop);
@@ -70,7 +68,22 @@ export function initHeader(page) {
     open ? stopScroll() : startScroll();
     document.documentElement.style.overflow = open ? 'hidden' : '';
   };
-  toggle?.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+  toggle?.addEventListener('click', () => { setFab(false); setMenu(!document.body.classList.contains('menu-open')); });
+
+  // floating contact button: one tap opens WhatsApp / Call / Enquiry
+  const fab = $('[data-fab]');
+  const fabBtn = $('.fab-main', fab || document);
+  function setFab(open) {
+    if (!fab) return;
+    fab.classList.toggle('is-open', open);
+    document.body.classList.toggle('fab-open', open);
+    fabBtn.setAttribute('aria-expanded', String(open));
+    fabBtn.setAttribute('aria-label', open ? 'Close contact options' : 'Contact options: WhatsApp, call or enquiry');
+  }
+  fabBtn?.addEventListener('click', () => setFab(!fab.classList.contains('is-open')));
+  fab?.addEventListener('click', e => { if (e.target.closest('.fab-item')) setTimeout(() => setFab(false), 50); });
+  document.addEventListener('click', e => { if (fab?.classList.contains('is-open') && !fab.contains(e.target)) setFab(false); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && fab?.classList.contains('is-open')) { setFab(false); fabBtn.focus(); } });
   addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('menu-open')) setMenu(false); });
 }
 

@@ -1,9 +1,9 @@
 import { boot } from '../core/app.js';
 import { gsap, reduced, initReveals } from '../core/motion.js';
-import { $, $$, toast } from '../core/utils.js';
+import { $ } from '../core/utils.js';
 import { icons } from '../core/icons.js';
 import { testimonialCard, stars } from '../core/components.js';
-import { submitTestimonial } from '../core/data.js';
+import { initReviewForm } from '../core/review.js';
 
 let pending = false;
 
@@ -28,38 +28,6 @@ function renderList(list) {
     <div class="t-grid">${list.map((t, i) => testimonialCard(t, { feature: i % 5 === 0 })).join('')}</div>`;
 }
 
-function initForm() {
-  const form = $('[data-review-form]');
-  const status = $('.form-status', form);
-  const btn = $('button[type=submit]', form);
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    if (btn.disabled) return; // double-submit guard
-    if (form.website.value) return; // honeypot
-    $$('.field', form).forEach(f => f.classList.remove('invalid'));
-    status.className = 'form-status';
-    let ok = true;
-    if (!form.name.value.trim()) { form.name.closest('.field').classList.add('invalid'); ok = false; }
-    if (form.message.value.trim().length < 20) { form.message.closest('.field').classList.add('invalid'); ok = false; }
-    if (!ok) { $('.invalid input, .invalid textarea', form)?.focus(); return; }
-    if (!form.consent.checked) { status.className = 'form-status bad'; status.textContent = 'Please tick the consent box so we can publish your review.'; form.consent.focus(); return; }
-    btn.disabled = true; btn.textContent = 'Submitting…';
-    try {
-      await submitTestimonial(Object.fromEntries(new FormData(form)));
-      status.className = 'form-status ok';
-      status.textContent = 'Thank you! Your review has been received and will appear after a quick check by our team.';
-      form.reset();
-      toast('Review submitted — thank you!');
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn(err);
-      status.className = 'form-status bad';
-      status.textContent = 'Sorry, we could not submit your review right now. Please check your connection and try again.';
-    } finally {
-      btn.disabled = false; btn.textContent = 'Submit review';
-    }
-  });
-}
-
 boot('testimonials', {
   render(data, first) {
     // First visit (nothing cached): show skeletons until Firestore answers, instead of a premature empty state.
@@ -67,7 +35,7 @@ boot('testimonials', {
     else renderList(data.testimonials);
     const g = $('[data-google-review]');
     if (g && data.settings.googleReviewUrl) g.href = data.settings.googleReviewUrl;
-    if (first) initForm();
+    if (first) initReviewForm();
   },
   loaded(data) {
     if (pending) { renderList(data.testimonials); initReveals($('[data-t-list]')); }

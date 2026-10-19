@@ -436,9 +436,9 @@ export async function testimonials(view) {
     const rows = items.filter(t => filter === 'all' || t.status === filter);
     $('[data-list]', view).innerHTML = rows.map(t => `
       <article class="card t-item" data-id="${t.id}">
-        <div><span class="stars">${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}</span>
+        <div class="t-head">${t.photo ? `<img class="t-photo" src="${esc(thumb(t.photo, 'w_96,h_96,c_fill,g_face'))}" alt="" />` : ''}<div><span class="stars">${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}</span>
           <div class="cell-main" style="margin-top:6px">${esc(t.name)} <span class="cell-sub">${esc([t.role, t.company, t.city].filter(Boolean).join(' · '))}</span></div>
-          <div class="cell-sub">${fmtDate(t.createdAt)} · ${t.source === 'website' ? 'Submitted on website' : 'Added by admin'}</div></div>
+          <div class="cell-sub">${fmtDate(t.createdAt)} · ${t.source === 'website' ? 'Submitted on website' : 'Added by admin'}${t.photo ? ' · with photo' : ''}</div></div></div>
         <div class="row" style="align-self:start"><span class="pill ${esc(t.status)}">${t.status === 'approved' ? 'published' : esc(t.status)}</span>
           ${t.status !== 'approved' ? `<button class="btn btn--sm" data-approve>${ic.check} Approve</button>` : `<button class="btn btn--ghost btn--sm" data-hide>Hide</button>`}
           <button class="icon-btn" data-edit>${ic.edit}</button><button class="icon-btn danger" data-del>${ic.trash}</button></div>

@@ -1,6 +1,6 @@
-import { initialData, loadData } from './data.js';
+import { initialData, loadData, watchData } from './data.js';
 import { applySettings, initHeader, initEnquiryForms, initImageFallback, fillProductSelects } from './layout.js';
-import { initSmoothScroll, initReveals, initParallax, runIntro, initPageTransitions, magnetic, ScrollTrigger, loadScrollTrigger, reduced, idle } from './motion.js';
+import { initSmoothScroll, initReveals, initParallax, runIntro, initPageTransitions, magnetic, initSectionMotion, ScrollTrigger, loadScrollTrigger, reduced, idle } from './motion.js';
 import { cldVideo } from './utils.js';
 import { vid } from './defaults.js';
 
@@ -48,22 +48,25 @@ export async function boot(name, page = {}) {
     if (motionReady) return; motionReady = true;
     await Promise.all([page.ready?.(), loadScrollTrigger()]);
     await idle(() => page.motion?.(data));
-    await idle(() => { initParallax(); magnetic(); ScrollTrigger.refresh(); motionLive = true; });
+    await idle(() => { initSectionMotion(); initParallax(); magnetic(); ScrollTrigger.refresh(); motionLive = true; });
   };
   engaged.then(setupMotion);
 
-  const live = await fresh;
-  if (live && sig(live) !== sig(data)) {
-    data = live;
+  const update = (next) => {
+    if (!next || sig(next) === sig(data)) return;
+    data = next;
     applySettings(data.settings);
     fillProductSelects(data.products);
     page.render?.(data, false);
     initReveals();
     if (motionLive) { initParallax(); ScrollTrigger.refresh(); }
-  }
+  };
+  update(await fresh);
   page.loaded?.(data);
   loaded.then(() => { if (motionLive) ScrollTrigger.refresh(); });
   whenEngaged().then(initBgVideos);
+  // admin edits appear on open pages without a reload
+  whenEngaged().then(() => watchData(update)).catch(() => {});
 }
 
 /** Stable signature of the visible data (sorted keys, no timestamps/flags) — re-render only on real changes. */

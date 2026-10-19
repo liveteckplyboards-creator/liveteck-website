@@ -108,10 +108,16 @@ const countUp = (el) => {
 };
 
 export function initReveals(root = document) {
-  const targets = root.querySelectorAll('.reveal:not(.is-in), .img-reveal:not(.is-in), [data-split]:not(.is-in), [data-count]:not([data-counted])');
+  const targets = root.querySelectorAll('.reveal:not(.is-in), .img-reveal:not(.is-in), [data-split]:not(.is-in), [data-count]:not([data-counted]), [data-words-in]:not(.is-in)');
   if (!targets.length) return;
   targets.forEach(el => {
     if (el.hasAttribute('data-split') && el.dataset.split !== '1') { splitLines(el); el.classList.add('split-reveal'); }
+    // paragraphs that rise word by word: <div class="reveal" data-words-in>
+    if (el.hasAttribute('data-words-in') && !el.dataset.wordsDone && !reduced) {
+      el.dataset.wordsDone = '1';
+      [...splitWords(el)].forEach((w, i) => w.style.setProperty('--wi', Math.min(i, 90)));
+      el.classList.add('words-in');
+    }
   });
   if (reduced || !('IntersectionObserver' in window)) {
     targets.forEach(el => { el.classList.add('is-in'); if (el.dataset.count) { el.dataset.counted = '1'; countUp(el); } });
@@ -208,5 +214,64 @@ export function magnetic(root = document) {
       yTo((e.clientY - r.top - r.height / 2) * 0.35);
     });
     el.addEventListener('mouseleave', () => { xTo(0); yTo(0); });
+  });
+}
+
+/**
+ * Scroll-drawn timeline: a line grows through the points as the visitor scrolls, and each
+ * point (and its text) appears when the line reaches it.
+ * Markup: box > [data-line] + items [data-line-item] each holding a [data-line-dot].
+ * `vertical()` decides the axis (it can change with the viewport).
+ */
+export function scrollLine(box, { vertical = () => true, start = 'top 78%', end = 'bottom 55%' } = {}) {
+  if (!box) return;
+  const items = [...box.querySelectorAll('[data-line-item]')];
+  if (reduced || !ScrollTrigger) { items.forEach(it => it.classList.add('is-on')); box.style.setProperty('--p', 1); return; }
+  let marks = [];
+  const state = { p: 0 };
+  const measure = () => {
+    const r = box.getBoundingClientRect();
+    const v = vertical();
+    const pos = items.map(it => {
+      const d = (it.querySelector('[data-line-dot]') || it).getBoundingClientRect();
+      return v ? d.top + d.height / 2 - r.top : d.left + d.width / 2 - r.left;
+    });
+    const a = pos[0], len = Math.max(1, pos[pos.length - 1] - a);
+    box.style.setProperty('--la', `${a}px`);
+    box.style.setProperty('--ll', `${len}px`);
+    marks = pos.map(x => (x - a) / len);
+    apply();
+  };
+  const apply = () => {
+    box.style.setProperty('--p', state.p.toFixed(4));
+    items.forEach((it, i) => it.classList.toggle('is-on', state.p >= marks[i] - 0.015));
+  };
+  box.classList.add('is-armed');
+  measure();
+  gsap.to(state, {
+    p: 1, ease: 'none', onUpdate: apply,
+    scrollTrigger: { trigger: box, start, end, scrub: 1.2, onRefresh: measure },
+  });
+}
+
+/**
+ * Section-to-section transitions: dark sections that follow a light one open up from a
+ * rounded, inset card to full width as they scroll in.
+ */
+export function initSectionMotion(root = document) {
+  if (reduced || !ScrollTrigger) return;
+  const isDark = el => el && el.matches?.('.bg-forest, .bg-deep, .cta-banner, .hero, .page-hero');
+  root.querySelectorAll('main > .bg-forest, main > .bg-deep, main > .cta-banner, main > .pin-spacer > .bg-forest, main > .pin-spacer > .bg-deep, .site-footer').forEach(sec => {
+    if (sec.dataset.sm) return;
+    const host = sec.parentElement.classList.contains('pin-spacer') ? sec.parentElement : sec;
+    let prev = host.previousElementSibling;
+    if (prev?.tagName === 'MAIN') prev = prev.lastElementChild;
+    if (prev?.classList.contains('pin-spacer')) prev = prev.firstElementChild;
+    if (!prev || isDark(prev)) return;
+    sec.dataset.sm = '1';
+    gsap.fromTo(sec,
+      { clipPath: 'inset(0% 5% 0% 5% round 44px 44px 0px 0px)' },
+      { clipPath: 'inset(0% 0% 0% 0% round 0px 0px 0px 0px)', ease: 'none',
+        scrollTrigger: { trigger: sec, start: 'top bottom', end: 'top 35%', scrub: 0.6 } });
   });
 }

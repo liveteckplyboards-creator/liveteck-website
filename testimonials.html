@@ -48,7 +48,7 @@
             <form class="form" data-review-form novalidate>
               <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
               <div class="field">
-                <span class="field-label" style="font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase">Your rating</span>
+                <span class="field-label">Your rating</span>
                 <div class="star-input" role="radiogroup" aria-label="Rating">
                   <input type="radio" name="rating" id="r5" value="5" checked /><label for="r5" title="5 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span class="sr-only">5 stars</span></label>
                   <input type="radio" name="rating" id="r4" value="4" /><label for="r4" title="4 stars"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span class="sr-only">4 stars</span></label>
@@ -58,14 +58,26 @@
                 </div>
               </div>
               <div class="form-row">
-                <div class="field"><label for="rv-name">Name <span class="req">*</span></label><input id="rv-name" name="name" required maxlength="80" autocomplete="name" /><span class="err">Please enter your name</span></div>
-                <div class="field"><label for="rv-city">City</label><input id="rv-city" name="city" maxlength="80" /></div>
+                <div class="field"><label for="rv-name">Name <span class="req">*</span></label><input id="rv-name" name="name" required maxlength="60" autocomplete="name" /><span class="err">Please enter your name</span></div>
+                <div class="field"><label for="rv-city">City</label><input id="rv-city" name="city" maxlength="40" autocomplete="address-level2" /></div>
               </div>
               <div class="form-row">
                 <div class="field"><label for="rv-role">You are a…</label>
                   <select id="rv-role" name="role"><option value="">Select</option><option>Homeowner</option><option>Interior Designer</option><option>Architect</option><option>Contractor</option><option>Builder</option><option>Carpenter</option><option>Furniture Manufacturer</option><option>Business owner</option></select>
                 </div>
-                <div class="field"><label for="rv-company">Company (optional)</label><input id="rv-company" name="company" maxlength="100" /></div>
+                <div class="field"><label for="rv-company">Company (optional)</label><input id="rv-company" name="company" maxlength="60" autocomplete="organization" /></div>
+              </div>
+              <div class="field">
+                <span class="field-label">Your photo <span class="opt">(optional)</span></span>
+                <div class="photo-pick" data-photo-pick>
+                  <span class="pp-avatar" data-pp-preview aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>
+                  <div class="pp-text">
+                    <label class="pp-btn" for="rv-photo">Upload a photo</label>
+                    <button class="pp-remove" type="button" data-pp-remove hidden>Remove</button>
+                    <span class="pp-hint" data-pp-hint>JPG, PNG or WebP · up to 8 MB. Shown as a small round picture with your review.</span>
+                  </div>
+                  <input class="sr-only" type="file" id="rv-photo" accept="image/jpeg,image/png,image/webp" data-pp-input />
+                </div>
               </div>
               <div class="field"><label for="rv-msg">Your review <span class="req">*</span></label><textarea id="rv-msg" name="message" required minlength="20" maxlength="1200" placeholder="What did you buy, and how did it work for you?"></textarea><span class="err">Please write at least 20 characters</span></div>
               <label class="consent"><input type="checkbox" name="consent" required /> <span>I agree that Liveteck Ply &amp; Boards may publish this review with my name, role and city.</span></label>
