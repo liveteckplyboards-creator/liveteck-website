@@ -52,8 +52,9 @@ function setFilter(id, scroll = true) {
 function handleHash() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (!h) return;
+  // category links (footer, home range) win when a product happens to share the id
   const p = DATA.products.find(x => x.id === h);
-  if (p) { openProduct(p, DATA.categories); return; }
+  if (p && !DATA.categories.some(c => c.id === h)) { openProduct(p, DATA.categories); return; }
   if (DATA.categories.some(c => c.id === h)) {
     setFilter('all', false);
     setTimeout(() => {
