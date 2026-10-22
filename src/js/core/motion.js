@@ -15,10 +15,16 @@ export const loadScrollTrigger = () => (stPromise ||= import('gsap/ScrollTrigger
   return ST;
 }));
 // sections with content-visibility:auto get their real size when first rendered → re-measure triggers
+// Never mid-glide: a refresh re-measures pinned sections, and doing that while the page is gliding
+// (back to top, anchor links) makes it jump. It waits until scrolling has settled.
 let cvTimer;
+const refreshWhenStill = () => {
+  clearTimeout(cvTimer);
+  cvTimer = setTimeout(() => (lenis?.isScrolling ? refreshWhenStill() : ScrollTrigger?.refresh()), 250);
+};
 document.addEventListener('contentvisibilityautostatechange', (e) => {
   if (e.skipped || !ScrollTrigger?.getAll().length) return;
-  clearTimeout(cvTimer); cvTimer = setTimeout(() => ScrollTrigger.refresh(), 250);
+  refreshWhenStill();
 }, true);
 
 export const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -34,7 +40,9 @@ export const idle = (fn, timeout = 1200) =>
 
 export function initSmoothScroll() {
   if (reduced) return null;
-  lenis = new Lenis({ duration: 1.15, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
+  // lerp: every wheel/trackpad step eases toward its target, frame by frame (the "buttery" feel);
+  // phones keep native momentum scrolling, which is already smooth and what thumbs expect.
+  lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.95, syncTouch: false });
   ScrollTrigger && lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.lagSmoothing(0);
   // Drive Lenis only while it's needed: a per-frame loop on an idle page keeps the main thread
@@ -49,15 +57,30 @@ export function initSmoothScroll() {
   ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(ev => addEventListener(ev, wake, { capture: true, passive: true }));
   const scrollTo = lenis.scrollTo.bind(lenis);
   lenis.scrollTo = (...args) => { wake(); return scrollTo(...args); };
-  // in-page anchors
+  // in-page anchors glide too
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]');
     if (!a || a.getAttribute('href').length < 2) return;
     let el = null;
     try { el = document.querySelector(a.getAttribute('href')); } catch { /* invalid selector */ }
-    if (el) { e.preventDefault(); lenis.scrollTo(el, { offset: -80 }); }
+    if (el) { e.preventDefault(); glideTo(el, { offset: -80 }); }
   });
   return lenis;
+}
+
+const easeInOutCubic = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+/**
+ * Programmatic scroll that always feels the same: the duration grows with the distance (a short hop
+ * is quick, a long way home is a calm glide, never a blur), with a soft start and a soft landing.
+ * Any wheel/touch from the visitor takes over immediately.
+ */
+export function glideTo(target, { offset = 0, onComplete } = {}) {
+  const y = typeof target === 'number' ? target : target.getBoundingClientRect().top + scrollY + offset;
+  const dist = Math.abs(y - scrollY);
+  if (!lenis || reduced) { scrollTo({ top: y, behavior: 'auto' }); onComplete?.(); return; }
+  const screens = dist / Math.max(1, innerHeight);
+  const duration = Math.min(2.2, Math.max(0.7, 0.55 + Math.sqrt(screens) * 0.42));
+  lenis.scrollTo(y, { duration, easing: easeInOutCubic, force: true, onComplete });
 }
 
 export const stopScroll = () => lenis?.stop();
@@ -152,7 +175,7 @@ export function initParallax(root = document) {
 
 /**
  * Opening intro (Home). The whole sequence is CSS (see .intro in main.css) and starts at
- * first paint; this only adds skip, scroll lock and cleanup, and resolves when the
+ * first paint; this only adds scroll lock and cleanup, and resolves when the
  * ply strips start sliding so the hero can animate in underneath.
  */
 export function runIntro() {
@@ -168,10 +191,6 @@ export function runIntro() {
     const band = intro.querySelector('.intro-bands i:nth-child(4)');
     band?.addEventListener('animationstart', (e) => { if (/^ip-band/.test(e.animationName)) reveal(); });
     intro.addEventListener('animationend', (e) => { if (e.target === intro && e.animationName === 'ip-gone') finish(); });
-    // Skip: click, key, wheel or touch jumps straight to the reveal
-    const skip = () => { if (!revealed) intro.classList.add('is-skip'); };
-    intro.addEventListener('click', skip);
-    ['keydown', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, skip, { once: true, passive: true }));
     // never hold the page hostage, even if animation events don't fire
     setTimeout(reveal, 2900);
     setTimeout(finish, 4200);

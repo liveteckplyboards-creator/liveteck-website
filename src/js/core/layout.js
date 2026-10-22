@@ -1,7 +1,7 @@
 import { $, $$, waLink, telLink, esc, toast } from './utils.js';
 import { icons } from './icons.js';
 import { submitEnquiry } from './data.js';
-import { stopScroll, startScroll, lenis } from './motion.js';
+import { stopScroll, startScroll, lenis, glideTo } from './motion.js';
 
 let SETTINGS = {};
 
@@ -34,28 +34,35 @@ export function initHeader(page) {
   $$(`[data-nav="${page}"]`).forEach(a => a.setAttribute('aria-current', 'page'));
   $$('.mobile-menu nav a').forEach(a => { if (new URL(a.href).pathname === location.pathname) a.setAttribute('aria-current', 'page'); });
 
-  let last = 0;
+  let last = 0, ticking = false;
   const toTop = $('[data-to-top]');
+  const ring = $('.tt-ring circle', toTop || document);
   const touch = matchMedia('(hover: none)').matches;
-  toTop?.addEventListener('click', () => {
-    // keyboard users land back at the top of the page, not on a button that's about to hide
-    const done = () => $('.site-header .brand')?.focus({ preventScroll: true });
-    if (lenis) lenis.scrollTo(0, { duration: 1.4, onComplete: done });
-    else { scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); setTimeout(done, 600); }
+  toTop?.addEventListener('click', (e) => {
+    // keyboard users (click with no pointer: detail 0) land back at the top, not on a button that's about to hide
+    const viaKeys = e.detail === 0;
+    glideTo(0, { onComplete: () => viaKeys && $('.site-header .brand')?.focus({ preventScroll: true }) });
   });
-  const onScroll = () => {
+  // page height is cached (reading it on every scroll event forces a layout) and refreshed on resize
+  let docH = document.documentElement.scrollHeight;
+  new ResizeObserver(() => { docH = document.documentElement.scrollHeight; }).observe(document.body);
+  const update = () => {
+    ticking = false;
     const y = window.scrollY;
     header.classList.toggle('is-solid', y > 40);
     const hide = y > 400 && y > last && !document.body.classList.contains('menu-open');
     header.classList.toggle('is-hidden', hide);
     document.body.classList.toggle('header-hidden', hide);
     // phones: only offer it when the visitor scrolls back up (or reaches the end), so it never sits on what they're reading
-    const wantsTop = !touch || y < last || y + innerHeight > document.documentElement.scrollHeight - 160;
+    const max = Math.max(1, docH - innerHeight);
+    const wantsTop = !touch || y < last || y > max - 160;
     toTop?.classList.toggle('on', y > innerHeight * 1.1 && wantsTop);
+    ring?.style.setProperty('--p', Math.min(1, y / max).toFixed(4));
     last = y;
   };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } };
   addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+  update();
 
   const toggle = $('.menu-toggle');
   const menu = $('#mobile-menu');

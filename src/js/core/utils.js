@@ -31,4 +31,5 @@ export function toast(msg, ms = 3600) {
   t._h = setTimeout(() => t.classList.remove('on'), ms);
 }
 
-export const initials = (name = '') => name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('');
+// letters only: "Ramesh (Demo)" gives "RD", not "R("
+export const initials = (name = '') => (name.match(/\p{L}+/gu) || []).slice(0, 2).map(w => w[0].toUpperCase()).join('');

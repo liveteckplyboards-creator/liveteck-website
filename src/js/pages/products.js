@@ -1,7 +1,7 @@
 import { boot } from '../core/app.js';
-import { gsap, ScrollTrigger, initReveals, lenis, reduced } from '../core/motion.js';
+import { gsap, ScrollTrigger, initReveals, reduced, glideTo } from '../core/motion.js';
 import { $, $$, esc } from '../core/utils.js';
-import { productCard, bindProductOpeners, openProduct } from '../core/components.js';
+import { productCard, bindProductOpeners, openProduct, closeDrawer } from '../core/components.js';
 
 let DATA;
 let active = 'all';
@@ -45,7 +45,7 @@ function setFilter(id, scroll = true) {
   renderCatalogue();
   if (scroll) {
     const top = $('#after-hero').getBoundingClientRect().top + scrollY - 72; // section top: the sticky bar's own rect moves
-    lenis ? lenis.scrollTo(top, { duration: 1 }) : scrollTo({ top, behavior: 'smooth' });
+    glideTo(top);
   }
 }
 
@@ -54,12 +54,13 @@ function handleHash() {
   if (!h) return;
   // category links (footer, home range) win when a product happens to share the id
   const p = DATA.products.find(x => x.id === h);
-  if (p && !DATA.categories.some(c => c.id === h)) { openProduct(p, DATA.categories); return; }
+  if (p && !DATA.categories.some(c => c.id === h)) { openProduct(p, DATA.categories, { products: DATA.products }); return; }
   if (DATA.categories.some(c => c.id === h)) {
+    if (document.querySelector('.drawer.is-open')) closeDrawer();
     setFilter('all', false);
     setTimeout(() => {
       const el = document.getElementById(h);
-      if (el) lenis ? lenis.scrollTo(el, { offset: -160, duration: 1.2 }) : el.scrollIntoView();
+      if (el) glideTo(el, { offset: -160 });
     }, 400);
   }
 }

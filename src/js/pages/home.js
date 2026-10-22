@@ -2,7 +2,7 @@ import { boot, whenEngaged } from '../core/app.js';
 import { gsap, ScrollTrigger, splitLines, splitWords, reduced, initReveals, idle, scrollLine, lenis } from '../core/motion.js';
 import { $, $$, cld, cldVideo, srcset, esc } from '../core/utils.js';
 import { icons } from '../core/icons.js';
-import { productCard, testimonialCard, bindProductOpeners, skeletonCards, stars } from '../core/components.js';
+import { productCard, reviewCarousel, bindProductOpeners, skeletonCards, stars } from '../core/components.js';
 import { initReviewForm } from '../core/review.js';
 import { THICKNESS_GUIDE, SPACES, img } from '../core/defaults.js';
 
@@ -31,38 +31,29 @@ function renderFeatured(products, cats) {
 
 function renderBento() {
   $('[data-bento]').innerHTML = SPACES.map(s => `
-    <article class="bento-item img-reveal">
+    <a class="bento-item img-reveal" href="${esc(s.href || '/products.html')}">
       <div class="bi-img" data-parallax="10"><img src="${cld(s.image, 'w_1200,c_limit')}" srcset="${srcset(s.image, [600, 1000, 1500])}" sizes="(max-width: 980px) 100vw, 50vw" alt="${esc(s.title)}" loading="lazy" /></div>
+      <span class="bi-go" aria-hidden="true">${icons.arrowUpRight}</span>
       <div class="bi-label"><div><small>${esc(s.tag)}</small><h3>${esc(s.title)}</h3></div><span class="bi-uses">${esc(s.uses)}</span></div>
-    </article>`).join('');
+    </a>`).join('');
 }
 
 let tPending = false;
 function renderTestimonials(list, { skeleton = false } = {}) {
   const box = $('[data-testimonials-preview]');
-  const nav = $('[data-t-nav]');
   tPending = skeleton;
-  if (skeleton) { box.innerHTML = skeletonCards(3); nav.hidden = true; return; }
+  if (skeleton) { box.innerHTML = skeletonCards(3); return; }
   if (list.length) {
     const avg = list.reduce((s, t) => s + (t.rating || 5), 0) / list.length;
     const n = list.length;
     box.innerHTML = `
       <div class="t-summary reveal" aria-label="Average rating ${avg.toFixed(1)} out of 5 from ${n} review${n > 1 ? 's' : ''}">
         <b>${avg.toFixed(1)}</b>
-        <div>${stars(Math.round(avg))}<span>${n} verified review${n > 1 ? 's' : ''}</span></div>
+        <div>${stars(Math.round(avg))}<span class="t-sum-count">${n} verified review${n > 1 ? 's' : ''}</span></div>
       </div>
-      <div class="t-slider" data-t-slider data-lenis-prevent-horizontal>${list.slice(0, 8).map((t, i) => testimonialCard(t, { feature: i === 0 })).join('')}</div>`;
-    const slider = $('[data-t-slider]', box);
-    const sync = () => {
-      const max = slider.scrollWidth - slider.clientWidth;
-      nav.hidden = max < 8;
-      $$('[data-t-step]', nav).forEach(b => { b.disabled = b.dataset.tStep < 0 ? slider.scrollLeft < 8 : slider.scrollLeft > max - 8; });
-    };
-    slider.addEventListener('scroll', sync, { passive: true });
-    new ResizeObserver(sync).observe(slider);
-    sync();
+      <div class="reveal" data-t-carousel></div>`;
+    reviewCarousel($('[data-t-carousel]', box), list.slice(0, 8));
   } else {
-    nav.hidden = true;
     box.innerHTML = `
       <div class="t-empty reveal">
         <span class="te-icon">${icons.quote}</span>
@@ -71,43 +62,64 @@ function renderTestimonials(list, { skeleton = false } = {}) {
       </div>`;
   }
 }
-function initTestimonialNav() {
-  $('[data-t-nav]').addEventListener('click', e => {
-    const b = e.target.closest('[data-t-step]');
-    const slider = $('[data-t-slider]');
-    if (!b || !slider) return;
-    const card = $('.t-card', slider);
-    const step = card ? card.getBoundingClientRect().width + 24 : slider.clientWidth * 0.8;
-    slider.scrollBy({ left: step * +b.dataset.tStep, behavior: reduced ? 'auto' : 'smooth' });
-  });
-}
 
-/* ---------- thickness guide ---------- */
+/* ---------- thickness guide ----------
+ * Tabs, the arrows inside the visual, a swipe across it (phones) or ←/→ all change the board.
+ * On phones the visual sits right above the tabs, so the change is always in view. */
 function initThickness() {
   const tabs = $('[data-tg-tabs]');
+  const visual = $('[data-tg-visual]');
+  const info = $('[data-tg-info]');
   tabs.innerHTML = THICKNESS_GUIDE.map(t => `<button class="tg-tab" role="tab" aria-selected="false" data-tg="${t.id}">${t.label}<small>${t.unit}</small></button>`).join('');
-  const select = (id) => {
-    const t = THICKNESS_GUIDE.find(x => x.id === id);
-    $$('.tg-tab', tabs).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tg === id)));
-    $('[data-tg-info]').innerHTML = `
-      <h3>${esc(t.title)}</h3><p>${esc(t.text)}</p>
-      <ul class="tg-uses">${t.uses.map(u => `<li>${esc(u)}</li>`).join('')}</ul>
-      <div style="margin-top:26px"><button class="link-arrow" data-open-product="${t.product}">View product ${icons.arrow}</button></div>`;
+  const maxH = Math.max(...THICKNESS_GUIDE.map(t => t.h));
+  let cur = -1;
+  // the edge is drawn to scale: the thickest board fills most of the visual's height
+  const scale = () => Math.min(isDesktop() ? 1.9 : 1.5, (visual.clientHeight - 90) / maxH);
+  const draw = () => {
+    const t = THICKNESS_GUIDE[cur];
+    const h = `${Math.max(14, t.h * scale())}px`;
     const edge = $('[data-tg-edge]');
-    const scale = isDesktop() ? 1.9 : 1.35;
-    edge.style.setProperty('--h', `${t.h * scale}px`);
-    $('[data-tg-bar]').style.setProperty('--h', `${t.h * scale}px`);
+    edge.style.setProperty('--h', h);
+    $('[data-tg-bar]').style.setProperty('--h', h);
     edge.classList.toggle('blockboard', !!t.blockboard);
     $('.plies', edge).innerHTML = t.blockboard ? '<i></i>' : Array.from({ length: t.plies }, (_, i) => `<i class="${i === 0 || i === t.plies - 1 ? 'face' : ''}"></i>`).join('');
     $('[data-tg-num]').innerHTML = `${t.label}<small>${t.unit}</small>`;
   };
-  tabs.addEventListener('click', e => { const b = e.target.closest('[data-tg]'); if (b) select(b.dataset.tg); });
+  const select = (i, { animate = true } = {}) => {
+    i = Math.max(0, Math.min(THICKNESS_GUIDE.length - 1, i));
+    if (i === cur) return;
+    cur = i;
+    const t = THICKNESS_GUIDE[i];
+    $$('.tg-tab', tabs).forEach((b, k) => { b.setAttribute('aria-selected', String(k === i)); b.tabIndex = k === i ? 0 : -1; });
+    info.innerHTML = `
+      <h3>${esc(t.title)}</h3><p>${esc(t.text)}</p>
+      <ul class="tg-uses">${t.uses.map(u => `<li>${esc(u)}</li>`).join('')}</ul>
+      <div style="margin-top:26px"><button class="link-arrow" data-open-product="${t.product}">View product ${icons.arrow}</button></div>`;
+    $$('[data-tg-step]', visual).forEach(b => { b.disabled = +b.dataset.tgStep < 0 ? i === 0 : i === THICKNESS_GUIDE.length - 1; });
+    draw();
+    if (animate && !reduced) {
+      [info, visual].forEach(el => { el.classList.remove(el === info ? 'is-swap' : 'is-bump'); void el.offsetWidth; el.classList.add(el === info ? 'is-swap' : 'is-bump'); });
+    }
+  };
+  const step = (d) => select(cur + d);
+  tabs.addEventListener('click', e => { const b = e.target.closest('[data-tg]'); if (b) select(THICKNESS_GUIDE.findIndex(t => t.id === b.dataset.tg)); });
   tabs.addEventListener('keydown', e => {
     if (!['ArrowRight', 'ArrowLeft'].includes(e.key)) return;
-    const all = $$('.tg-tab', tabs); const i = all.indexOf(document.activeElement);
-    const n = all[(i + (e.key === 'ArrowRight' ? 1 : -1) + all.length) % all.length]; n.focus(); n.click();
+    e.preventDefault();
+    step(e.key === 'ArrowRight' ? 1 : -1);
+    $$('.tg-tab', tabs)[cur].focus();
   });
-  select('19');
+  visual.addEventListener('click', e => { const b = e.target.closest('[data-tg-step]'); if (b) step(+b.dataset.tgStep); });
+  // swipe across the visual: left = thicker, right = thinner (vertical page scroll is left alone)
+  let sx = null, sy = 0;
+  visual.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  visual.addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+    if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1);
+  }, { passive: true });
+  new ResizeObserver(() => cur >= 0 && draw()).observe(visual);
+  select(THICKNESS_GUIDE.findIndex(t => t.id === '19'), { animate: false });
 }
 
 /* ---------- hero ---------- */
@@ -218,22 +230,80 @@ function anatomy() {
     .to($$('.ply-label', stack), { opacity: 0, duration: 0.1 }, 0.8);
 }
 
-/* ---------- horizontal categories (pinned, desktop and phones) ---------- */
+/* ---------- horizontal categories (pinned, desktop and phones) ----------
+ * Scrolling down moves the range sideways. People on phones often try to swipe the cards
+ * sideways instead — so that works too: a horizontal swipe drives the same scroll position,
+ * with momentum, and the row settles on a card. A hint and a counter say what's going on. */
 function hscroll() {
   const section = $('[data-hscroll]');
   const track = $('[data-hscroll-track]');
   const bar = $('[data-hs-progress]');
+  const hint = $('[data-hs-hint]');
+  const curEl = $('[data-hs-cur]');
   if (reduced) return;
+  const touch = matchMedia('(hover: none), (pointer: coarse)').matches;
   section.classList.add('is-pinned');
+  section.classList.toggle('is-touch', touch);
+  const cards = $$('.cat-card', track);
+  $('[data-hs-total]').textContent = String(cards.length).padStart(2, '0');
   const dist = () => Math.max(0, track.scrollWidth - innerWidth);
-  gsap.to(track, {
+  // scroll progress at which each card sits at the left edge (0 = the intro panel)
+  let stops = [0];
+  const measureStops = () => {
+    const d = dist() || 1;
+    const pad = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+    stops = [0, ...cards.map(c => Math.min(1, Math.max(0, (c.offsetLeft - pad) / d)))];
+  };
+  let hinted = false;
+  const tween = gsap.to(track, {
     x: () => -dist(), ease: 'none',
     scrollTrigger: {
-      trigger: section, start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: 0.8, invalidateOnRefresh: true, anticipatePin: 1,
-      onUpdate: self => gsap.set(bar, { scaleX: self.progress }),
+      trigger: section, start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: touch ? 0.4 : 0.8, invalidateOnRefresh: true, anticipatePin: 1,
+      onRefresh: measureStops,
+      // phones: the row settles on a card once the finger lifts
+      snap: touch ? { snapTo: (p) => stops.reduce((a, b) => (Math.abs(b - p) < Math.abs(a - p) ? b : a), 0), duration: { min: 0.25, max: 0.6 }, delay: 0.06, ease: 'power2.inOut' } : undefined,
+      onUpdate: self => {
+        gsap.set(bar, { scaleX: self.progress });
+        let i = 0; stops.forEach((s, k) => { if (self.progress >= s - 0.02) i = k; });
+        curEl.textContent = String(Math.max(1, i)).padStart(2, '0');
+        if (!hinted && self.progress > 0.06) { hinted = true; hint.classList.add('is-off'); }
+      },
     },
   });
-  gsap.from($$('.cat-card', track), { y: 80, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: section, start: 'top 70%' } });
+  measureStops();
+  if (touch) $('[data-hs-hint-text]').textContent = 'Scroll down or swipe';
+  gsap.from(cards, { y: 80, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: section, start: 'top 70%' } });
+  if (!touch) return;
+
+  // sideways swipe → the same scroll the pin maps to the row (1px of scroll = 1px of travel)
+  const st = tween.scrollTrigger;
+  let x0 = 0, y0 = 0, s0 = 0, mode = null, lastX = 0, lastT = 0, vx = 0;
+  const wrap = $('.hscroll-wrap', section);
+  wrap.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    x0 = lastX = t.clientX; y0 = t.clientY; s0 = scrollY; lastT = performance.now(); vx = 0; mode = null;
+  }, { passive: true });
+  wrap.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    if (!mode && Math.hypot(dx, dy) > 8) mode = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (mode !== 'x') return;
+    const now = performance.now();
+    vx = (t.clientX - lastX) / Math.max(1, now - lastT); lastX = t.clientX; lastT = now;
+    scrollTo(0, Math.min(st.end, Math.max(st.start, s0 - dx)));
+    if (!hinted) { hinted = true; hint.classList.add('is-off'); }
+  }, { passive: true });
+  wrap.addEventListener('touchend', () => {
+    if (mode !== 'x') return;
+    mode = null;
+    // a flick carries on (momentum), then settles on the nearest card in the direction of travel
+    const d = dist() || 1;
+    const p = (scrollY - st.start) / d;
+    const projected = p - (vx * 260) / d;
+    let target = stops.reduce((a, b) => (Math.abs(b - projected) < Math.abs(a - projected) ? b : a), 0);
+    const y = st.start + target * d;
+    lenis ? lenis.scrollTo(y, { duration: 0.7, easing: t => 1 - Math.pow(1 - t, 3) }) : scrollTo({ top: y, behavior: 'smooth' });
+  }, { passive: true });
 }
 
 function stepsLine() {
@@ -266,7 +336,7 @@ boot('home', {
       () => renderFeatured(data.products, data.categories),
       () => renderTestimonials(data.testimonials, { skeleton: first && !data.fromCache }),
     ];
-    if (first) { bindProductOpeners(() => DATA); initReviewForm(); initTestimonialNav(); jobs.push(renderBento, initThickness); }
+    if (first) { bindProductOpeners(() => DATA); initReviewForm(); jobs.push(renderBento, initThickness); }
     if (!first && data.settings.heroTitle) {
       const h = $('[data-hero-title]');
       const html = data.settings.heroTitle.replace(/\.\s*<em>/i, '.<br><em>');

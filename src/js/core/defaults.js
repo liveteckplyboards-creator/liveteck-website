@@ -218,10 +218,10 @@ export const THICKNESS_GUIDE = [
 ];
 
 export const SPACES = [
-  { title: 'Modular kitchens', tag: 'Kitchen', image: MEDIA.kitchen, uses: 'BWP plywood carcasses, laminates & veneers' },
-  { title: 'Wardrobes', tag: 'Bedroom', image: MEDIA.wardrobe, uses: '19 mm & 16 mm plywood, laminates' },
-  { title: 'Living & TV walls', tag: 'Living', image: MEDIA.living, uses: 'Veneer panelling, 12 mm ply' },
-  { title: 'Doors', tag: 'Entrances', image: MEDIA.doors, uses: 'Flush doors & block boards' },
-  { title: 'Offices', tag: 'Commercial', image: MEDIA.office, uses: 'Flexi ply, laminates, block boards' },
-  { title: 'Custom furniture', tag: 'Workshops', image: MEDIA.workshop, uses: 'The full Liveteck range' },
+  { title: 'Modular kitchens', href: '/products.html#laminates', tag: 'Kitchen', image: MEDIA.kitchen, uses: 'BWP plywood carcasses, laminates & veneers' },
+  { title: 'Wardrobes', href: '/products.html#plywood', tag: 'Bedroom', image: MEDIA.wardrobe, uses: '19 mm & 16 mm plywood, laminates' },
+  { title: 'Living & TV walls', href: '/products.html#veneer', tag: 'Living', image: MEDIA.living, uses: 'Veneer panelling, 12 mm ply' },
+  { title: 'Doors', href: '/products.html#flush-doors', tag: 'Entrances', image: MEDIA.doors, uses: 'Flush doors & block boards' },
+  { title: 'Offices', href: '/products.html#flexi-plywood', tag: 'Commercial', image: MEDIA.office, uses: 'Flexi ply, laminates, block boards' },
+  { title: 'Custom furniture', href: '/products.html', tag: 'Workshops', image: MEDIA.workshop, uses: 'The full Liveteck range' },
 ];
