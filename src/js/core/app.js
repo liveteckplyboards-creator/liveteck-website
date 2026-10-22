@@ -24,6 +24,7 @@ export const whenEngaged = () => Promise.all([afterLoad(200), engaged]);
  */
 export async function boot(name, page = {}) {
   window.__ltBooted = true;
+  lockZoom();
   initImageFallback();
   initFocusTrap();
   initSmoothScroll();
@@ -115,4 +116,22 @@ function initBgVideos() {
     }, { rootMargin: '200px' });
     io.observe(box);
   });
+}
+
+/**
+ * The site keeps one fixed scale (client request): no pinch or double-tap zoom on phones, no
+ * Ctrl/⌘ + wheel, trackpad pinch or Ctrl/⌘ +/− on desktop. Scrolling and swiping are untouched.
+ * Phones: the viewport meta (Android) and touch-action (CSS) cover it; iOS Safari ignores both for
+ * pinch, so its gesture events are cancelled here too. Product photos keep their own zoom.
+ */
+function lockZoom() {
+  const stop = (e) => e.preventDefault();
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, stop, { passive: false }));
+  // iOS only (Android obeys the viewport meta): a blocking touch listener elsewhere would only slow scrolling
+  const iOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (iOS) document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+  addEventListener('wheel', (e) => { if (e.ctrlKey || e.metaKey) e.preventDefault(); }, { passive: false, capture: true });
+  addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && ['=', '+', '-', '_', '0'].includes(e.key)) e.preventDefault();
+  }, { capture: true });
 }

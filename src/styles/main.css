@@ -52,7 +52,7 @@
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: auto; scrollbar-gutter: stable; } /* locking scroll (intro, modal, drawer) never changes the page width */
+html { touch-action: pan-x pan-y; -webkit-text-size-adjust: 100%; scroll-behavior: auto; scrollbar-gutter: stable; } /* locking scroll (intro, modal, drawer) never changes the page width */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
@@ -722,7 +722,7 @@ ul, ol { padding: 0; list-style: none; }
 .filter-btn[aria-pressed='true'] { background: var(--forest-700); color: var(--ivory); border-color: var(--forest-700); }
 .filter-btn:hover:not([aria-pressed='true']) { border-color: var(--forest-700); }
 .search-box { position: relative; flex: 0 0 260px; }
-.search-box input { width: 100%; height: 44px; border-radius: 999px; border: 1px solid var(--line); background: #fff; padding: 0 16px 0 42px; font-size: 14.5px; }
+.search-box input { width: 100%; height: 44px; border-radius: 999px; border: 1px solid var(--line); background: #fff; padding: 0 16px 0 42px; font-size: 16px; }
 .search-box svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; color: var(--muted); }
 .cat-block { padding-top: clamp(60px, 7vw, 100px); }
 .cat-block-head { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: end; margin-bottom: 36px; padding-bottom: 26px; border-bottom: 1px solid var(--line); }
@@ -919,9 +919,9 @@ ul, ol { padding: 0; list-style: none; }
 .fab > * { pointer-events: auto; }
 .fab-main {
   position: relative; width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; background: var(--wa); color: #fff;
-  box-shadow: 0 14px 34px -10px rgba(22,128,74,.6); transition: transform .5s var(--ease), background .4s;
+  box-shadow: 0 12px 28px -12px rgba(22,128,74,.65), 0 0 0 1px rgba(255,255,255,.12) inset; transition: transform .5s var(--ease), background .4s;
 }
-.fab-main::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--wa); animation: pulse 2.4s infinite; }
+.fab-main::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--wa); opacity: 0; animation: pulse 2.6s ease-out 1.5s 3; }
 .fab-main:hover { transform: scale(1.06); }
 .fab-ic { position: absolute; display: grid; place-items: center; transition: transform .5s var(--ease), opacity .3s; }
 .fab-ic svg { width: 28px; height: 28px; }
@@ -950,23 +950,31 @@ ul, ol { padding: 0; list-style: none; }
 .fi--enq { background: var(--forest-700); color: var(--gold-300); }
 .fab-open .to-top { opacity: 0; visibility: hidden; }
 .menu-open .fab { opacity: 0; visibility: hidden; }
-@keyframes pulse { 0% { transform: scale(1); opacity: .8; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes pulse { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(1.45); opacity: 0; } }
 /* back to top: appears after ~1 screen of scrolling, above the WhatsApp button (and above the quick-action bar on phones) */
+/* back to top: a quiet ivory button stacked on the same axis as the WhatsApp button; a thin gold line
+   drawn on its own edge shows how far down the page you are */
 .to-top {
-  position: fixed; right: 30px; bottom: 98px; z-index: 89; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
-  background: var(--forest-900); color: var(--gold-300); border: 1px solid rgba(220,187,124,.35); box-shadow: 0 14px 30px -12px rgba(3,20,13,.55);
-  opacity: 0; visibility: hidden; transform: translateY(14px);
-  transition: opacity .4s var(--ease), transform .5s var(--ease), background-color .3s, visibility 0s .5s;
+  --size: 46px; --fab: 62px; --fab-right: 22px; --fab-bottom: 22px;
+  position: fixed; right: calc(var(--fab-right) + (var(--fab) - var(--size)) / 2); bottom: calc(var(--fab-bottom) + var(--fab) + 14px); z-index: 89;
+  width: var(--size); height: var(--size); border-radius: 50%; display: grid; place-items: center;
+  background: rgba(247,243,234,.94); color: var(--forest-800); border: 0;
+  box-shadow: 0 0 0 1px rgba(18,22,15,.08), 0 10px 24px -12px rgba(3,20,13,.4);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  opacity: 0; visibility: hidden; transform: translateY(10px) scale(.92);
+  transition: opacity .35s var(--ease), transform .45s var(--ease), background-color .3s, color .3s, visibility 0s .45s;
 }
-.to-top.on { opacity: 1; visibility: visible; transform: none; transition: opacity .4s var(--ease), transform .5s var(--ease), background-color .3s, visibility 0s; }
-.to-top:hover { background: var(--forest-700); }
-.to-top svg { width: 20px; height: 20px; transition: transform .4s var(--ease); }
-/* ring = how far down the page you are */
-.to-top .tt-ring { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); transform: rotate(-90deg); pointer-events: none; }
-.to-top .tt-ring circle { fill: none; stroke: var(--gold-400); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--p, 0)); transition: stroke-dashoffset .15s linear; }
-.to-top:hover .tt-ring { transform: rotate(-90deg); }
-.to-top:hover svg:not(.tt-ring) { transform: translateY(-2px); }
-.to-top:focus-visible { outline: 2px solid var(--gold-400); outline-offset: 3px; }
+.to-top.on { opacity: 1; visibility: visible; transform: none; transition: opacity .35s var(--ease), transform .45s var(--ease), background-color .3s, color .3s, visibility 0s; }
+.to-top:hover { background: var(--forest-800); color: var(--ivory); }
+.to-top > svg:not(.tt-ring) { position: relative; width: 18px; height: 18px; transition: transform .4s var(--ease); }
+.to-top:hover > svg:not(.tt-ring) { transform: translateY(-2px); }
+.to-top .tt-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); pointer-events: none; overflow: visible; }
+.to-top .tt-ring circle { fill: none; stroke-width: 2; }
+.to-top .tt-track { stroke: rgba(18,22,15,.06); }
+.to-top .tt-bar { stroke: var(--gold-500); stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--p, 0)); transition: stroke-dashoffset .15s linear; }
+.to-top:hover .tt-track { stroke: transparent; }
+.to-top:hover .tt-bar { stroke: var(--gold-300); }
+.to-top:focus-visible { outline: 2px solid var(--gold-500); outline-offset: 3px; }
 .menu-open .to-top { opacity: 0; visibility: hidden; }
 
 /* ---------- loader & transitions ---------- */
@@ -1202,7 +1210,7 @@ img.is-missing { opacity: 0 !important; }
   .tg-ruler b { font-size: 40px; }
   .fab { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); }
   .fab-main { width: 56px; height: 56px; }
-  .to-top { right: 21px; bottom: calc(86px + env(safe-area-inset-bottom)); }
+  .to-top { --size: 44px; --fab: 56px; --fab-right: 16px; --fab-bottom: calc(16px + env(safe-area-inset-bottom)); }
   .pc-view { opacity: 1; transform: none; }
   .page-hero { min-height: 560px; }
   .t-card { padding: 26px; }

@@ -36,7 +36,7 @@ export function initHeader(page) {
 
   let last = 0, ticking = false;
   const toTop = $('[data-to-top]');
-  const ring = $('.tt-ring circle', toTop || document);
+  const ring = $('.tt-bar', toTop || document);
   const touch = matchMedia('(hover: none)').matches;
   toTop?.addEventListener('click', (e) => {
     // keyboard users (click with no pointer: detail 0) land back at the top, not on a button that's about to hide
