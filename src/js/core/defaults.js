@@ -225,3 +225,13 @@ export const SPACES = [
   { title: 'Offices', href: '/products.html#flexi-plywood', tag: 'Commercial', image: MEDIA.office, uses: 'Flexi ply, laminates, block boards' },
   { title: 'Custom furniture', href: '/products.html', tag: 'Workshops', image: MEDIA.workshop, uses: 'The full Liveteck range' },
 ];
+
+// "Where it's used" slides in the product gallery: interiors (from SPACES) that show each category at work.
+export const CATEGORY_SPACES = {
+  plywood: ['Modular kitchens', 'Wardrobes', 'Custom furniture'],
+  'block-board': ['Doors', 'Wardrobes', 'Custom furniture'],
+  'flexi-plywood': ['Offices', 'Living & TV walls'],
+  veneer: ['Living & TV walls', 'Doors', 'Offices'],
+  laminates: ['Modular kitchens', 'Wardrobes', 'Offices'],
+  'flush-doors': ['Doors', 'Living & TV walls'],
+};

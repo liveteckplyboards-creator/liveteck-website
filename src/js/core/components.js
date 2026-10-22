@@ -2,6 +2,7 @@ import { cld, srcset, esc, waLink, initials, $, $$ } from './utils.js';
 import { icons } from './icons.js';
 import { getSettings } from './layout.js';
 import { stopScroll, startScroll, reduced } from './motion.js';
+import { SPACES, CATEGORY_SPACES } from './defaults.js';
 
 export const catName = (cats, id) => cats.find(c => c.id === id)?.name || id;
 
@@ -195,8 +196,15 @@ let gallery = null; // the open drawer's slideshow (stopped when the drawer clos
 export function openProduct(p, cats, { products = [], start = 0 } = {}) {
   const d = ensureDrawer();
   const imgs = (p.images || []).filter(Boolean);
-  const many = imgs.length > 1;
-  start = Math.min(Math.max(0, start), Math.max(0, imgs.length - 1));
+  // the product's own photos first, then interiors that show the material at work
+  const uses = (CATEGORY_SPACES[p.category] || ['Custom furniture', 'Living & TV walls']).map(t => SPACES.find(x => x.title === t)).filter(Boolean);
+  const slides = [
+    ...imgs.map((src, i) => ({ src, kind: 'product', alt: `${p.name}${imgs.length > 1 ? ` — photo ${i + 1}` : ''}` })),
+    ...uses.map(u => ({ src: u.image, kind: 'use', title: u.title, alt: `${u.title} — where ${p.name} is used` })),
+  ];
+  if (!slides.length) slides.push({ src: '', kind: 'product', alt: p.name });
+  const many = slides.length > 1;
+  start = Math.min(Math.max(0, start), slides.length - 1);
   const s = getSettings();
   const related = products.filter(x => x.id !== p.id && x.category === p.category && x.published !== false).slice(0, 4);
   const others = related.length ? related : products.filter(x => x.id !== p.id && x.featured).slice(0, 4);
@@ -205,22 +213,28 @@ export function openProduct(p, cats, { products = [], start = 0 } = {}) {
       <div class="pd-gallery${many ? ' has-many' : ''}">
         <div class="pd-stage">
           <div class="pd-track" data-pd-track data-lenis-prevent tabindex="-1">
-            ${(imgs.length ? imgs : ['']).map((u, i) => `
-            <figure class="pd-slide${i === start ? ' is-active' : ''}"${many ? ` aria-roledescription="slide" aria-label="${i + 1} of ${imgs.length}"` : ''}>
-              <img class="pd-bg" src="${cld(u, 'w_200,c_limit')}" alt="" aria-hidden="true" />
-              <img class="pd-img" src="${cld(u, 'w_1400,c_limit')}" alt="${esc(p.name)}${many ? ` — photo ${i + 1}` : ''}" draggable="false" />
+            ${slides.map((sl, i) => `
+            <figure class="pd-slide pd-slide--${sl.kind}${i === start ? ' is-active' : ''}"${many ? ` aria-roledescription="slide" aria-label="${i + 1} of ${slides.length}"` : ''}>
+              <img class="pd-img" src="${cld(sl.src, 'w_1400,c_limit')}" srcset="${srcset(sl.src, [800, 1200, 1600, 2200])}" sizes="(max-width: 980px) 100vw, 640px" alt="${esc(sl.alt)}" draggable="false" ${i > 1 ? 'loading="lazy"' : ''} />
+              ${sl.kind === 'use' ? `<figcaption class="pd-use"><small>Where it’s used</small>${esc(sl.title)}</figcaption>` : ''}
             </figure>`).join('')}
           </div>
           ${many ? `
-          <div class="pd-bars" aria-hidden="true">${imgs.map(() => '<i><b></b></i>').join('')}</div>
+          <div class="pd-bars" aria-hidden="true">${slides.map(() => '<i><b></b></i>').join('')}</div>
           <button class="pd-nav pd-prev" data-pd-step="-1" aria-label="Previous image">${icons.arrow}</button>
           <button class="pd-nav pd-next" data-pd-step="1" aria-label="Next image">${icons.arrow}</button>
           <div class="pd-hud">
-            <span class="pd-count" aria-live="polite"><b>${start + 1}</b> / ${imgs.length}</span>
+            <span class="pd-count" aria-live="polite"><b>${start + 1}</b> / ${slides.length}</span>
             <button class="pd-play" type="button" data-pd-play aria-label="Pause slideshow">${icons.pause}</button>
           </div>` : ''}
+          <button class="pd-zoom" type="button" data-pd-zoom aria-label="Zoom into the photo">${icons.search}</button>
         </div>
-        ${many ? `<div class="pd-thumbs">${imgs.map((u, i) => `<button data-thumb="${i}" aria-label="Show image ${i + 1}" aria-current="${i === start}"><img src="${cld(u, 'w_200,h_200,c_fill')}" alt="" /><i></i></button>`).join('')}</div>` : ''}
+        ${many ? `<div class="pd-thumbs">${slides.map((sl, i) => `<button data-thumb="${i}" class="${sl.kind === 'use' ? 'is-use' : ''}" aria-label="${esc(sl.kind === 'use' ? `Where it’s used: ${sl.title}` : `Product photo ${i + 1}`)}" aria-current="${i === start}"><img src="${cld(sl.src, 'w_240,h_160,c_fill')}" alt="" /><i></i></button>`).join('')}</div>` : ''}
+        <ul class="pd-assure">
+          <li>${icons.store}<span><b>See it in store</b>Temple Street, Kakinada</span></li>
+          <li>${icons.ruler}<span><b>Expert advice</b>The right board for each part</span></li>
+          <li>${icons.chat}<span><b>Quick quote</b>Call or WhatsApp us</span></li>
+        </ul>
       </div>
       <div class="pd-info">
         <div class="pd-chips">
@@ -244,8 +258,9 @@ export function openProduct(p, cats, { products = [], start = 0 } = {}) {
     </div>`;
   d.setAttribute('aria-labelledby', 'pd-title');
   gallery?.stop();
-  gallery = many ? slideshow(d, imgs.length) : null;
-  imgs.forEach(u => { new Image().src = cld(u, 'w_1400,c_limit'); }); // warm the cache so every slide is instant
+  gallery = many ? slideshow(d, slides.length) : null;
+  bindZoom(d);
+  slides.slice(1, 3).forEach(sl => { new Image().src = cld(sl.src, 'w_1400,c_limit'); }); // warm the next slides
   const wasOpen = d.classList.contains('is-open');
   d.inert = false;
   d.classList.add('is-open');
@@ -258,6 +273,33 @@ export function openProduct(p, cats, { products = [], start = 0 } = {}) {
     setTimeout(() => $('.drawer-close', d).focus(), 300);
   }
   if (history.replaceState) history.replaceState(null, '', `#${p.id}`);
+}
+
+function bindZoom(d) {
+  const stage = $('.pd-stage', d);
+  const btn = $('[data-pd-zoom]', d);
+  const active = () => $('.pd-slide.is-active .pd-img', d) || $('.pd-img', d);
+  const set = (on) => {
+    stage.classList.toggle('is-zoom', on);
+    btn.setAttribute('aria-pressed', String(on));
+    gallery?.hold('zoom', on);
+    if (!on) $$('.pd-img', d).forEach(im => im.style.removeProperty('transform-origin'));
+  };
+  const aim = (e) => {
+    const im = active(); if (!im) return;
+    const r = im.getBoundingClientRect();
+    im.style.transformOrigin = `${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`;
+  };
+  btn.addEventListener('click', () => set(!stage.classList.contains('is-zoom')));
+  $('[data-pd-track]', d).addEventListener('click', (e) => {
+    if (matchMedia('(hover: none)').matches) return;
+    const on = !stage.classList.contains('is-zoom');
+    if (on) aim(e);
+    set(on);
+  });
+  stage.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && stage.classList.contains('is-zoom')) aim(e); });
+  stage.addEventListener('pointerleave', () => stage.classList.contains('is-zoom') && set(false));
+  $('[data-pd-track]', d).addEventListener('scroll', () => stage.classList.contains('is-zoom') && set(false), { passive: true });
 }
 
 function slideshow(d, n) {
@@ -347,6 +389,7 @@ function slideshow(d, n) {
   if (!playing) setPlaying(false);
   return {
     jump: (i) => { cur = -1; go(i, false); },
+    hold,
     stop: () => { clear(); clearTimeout(st); clearTimeout(tt); document.removeEventListener('visibilitychange', onVis); removeEventListener('keydown', onKey); ro.disconnect(); },
   };
 }
