@@ -39,6 +39,34 @@ export function productCard(p, cats, { reveal = true } = {}) {
   </article>`;
 }
 
+/**
+ * Glide a horizontal track to a position. Native smooth scrolling inside a scroll-snap track can lag
+ * by seconds in Chrome (the frame shows the previous slide, or half of two), so it's animated here:
+ * snapping is paused for the move, and a finger or wheel on the track takes over at once.
+ */
+const glides = new WeakMap();
+export function glideX(el, to, dur = 620) {
+  glides.get(el)?.();
+  const from = el.scrollLeft;
+  if (reduced || Math.abs(to - from) < 1) { el.scrollLeft = to; return; }
+  let raf, stopped = false;
+  const t0 = performance.now();
+  const ease = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const stop = () => { if (stopped) return; stopped = true; cancelAnimationFrame(raf); el.style.scrollSnapType = ''; ['pointerdown', 'wheel', 'touchstart'].forEach(e => el.removeEventListener(e, stop)); glides.delete(el); };
+  ['pointerdown', 'wheel', 'touchstart'].forEach(e => el.addEventListener(e, stop, { passive: true }));
+  el.style.scrollSnapType = 'none';
+  const step = (now) => {
+    const p = Math.min(1, (now - t0) / dur);
+    el.scrollLeft = from + (to - from) * ease(p);
+    if (p < 1) raf = requestAnimationFrame(step); else stop();
+  };
+  raf = requestAnimationFrame(step);
+  glides.set(el, stop);
+}
+
+/** Exact scroll position of slide i in a track (slides can be fractional widths, so never i × clientWidth). */
+const slideLeft = (tr, i) => { const c = tr.children[Math.max(0, Math.min(tr.children.length - 1, i))]; return c ? c.getBoundingClientRect().left - tr.getBoundingClientRect().left + tr.scrollLeft : 0; };
+
 /* Card photo carousels: swipe (phones), arrows (hover), dots follow the scroll. Delegated, so every list gets it. */
 const trackIndex = (tr) => Math.round(tr.scrollLeft / Math.max(1, tr.clientWidth));
 document.addEventListener('scroll', e => {
@@ -55,7 +83,7 @@ document.addEventListener('click', e => {
   if (!b) return;
   e.stopPropagation(); e.preventDefault();
   const tr = $('[data-pc-track]', b.parentElement);
-  tr.scrollTo({ left: (trackIndex(tr) + +b.dataset.pcStep) * tr.clientWidth, behavior: reduced ? 'auto' : 'smooth' });
+  glideX(tr, slideLeft(tr, trackIndex(tr) + +b.dataset.pcStep));
 }, true);
 
 /** Placeholder cards shown while live data loads on a first visit. */
@@ -112,7 +140,7 @@ export function reviewCarousel(box, list) {
     let best = 0; cards.forEach((c, i) => { if (Math.abs(pos(i) - slider.scrollLeft) < Math.abs(pos(best) - slider.scrollLeft)) best = i; });
     return best;
   };
-  const go = (i) => slider.scrollTo({ left: pos(Math.max(0, Math.min(cards.length - 1, i))), behavior: reduced ? 'auto' : 'smooth' });
+  const go = (i) => glideX(slider, Math.min(slider.scrollWidth - slider.clientWidth, pos(Math.max(0, Math.min(cards.length - 1, i)))));
   const sync = () => {
     const max = slider.scrollWidth - slider.clientWidth;
     controls.hidden = max < 8;
@@ -340,12 +368,12 @@ function slideshow(d, n) {
     thumbs.forEach((t, k) => t.setAttribute('aria-current', String(k === i)));
     if (count) count.textContent = i + 1;
     const t = thumbs[i];
-    if (t && thumbsBox) thumbsBox.scrollTo({ left: t.offsetLeft - (thumbsBox.clientWidth - t.offsetWidth) / 2, behavior: 'smooth' });
+    if (t && thumbsBox) glideX(thumbsBox, Math.max(0, Math.min(thumbsBox.scrollWidth - thumbsBox.clientWidth, t.offsetLeft - (thumbsBox.clientWidth - t.offsetWidth) / 2)), 450);
     restart();
   };
   const go = (i, smooth = true) => {
     i = (i + n) % n;
-    track.scrollTo({ left: i * track.clientWidth, behavior: smooth && !reduced ? 'smooth' : 'auto' });
+    if (smooth) glideX(track, slideLeft(track, i)); else track.scrollLeft = slideLeft(track, i);
     paint(i);
   };
   const hold = (k, on) => {
@@ -384,7 +412,7 @@ function slideshow(d, n) {
     if (e.key === 'ArrowLeft') { e.preventDefault(); go(cur - 1); }
   };
   addEventListener('keydown', onKey);
-  const ro = new ResizeObserver(() => track.scrollTo({ left: cur * track.clientWidth }));
+  const ro = new ResizeObserver(() => track.scrollTo({ left: slideLeft(track, cur) }));
   ro.observe(track);
   if (!playing) setPlaying(false);
   return {
