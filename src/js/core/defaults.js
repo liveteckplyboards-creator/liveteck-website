@@ -32,7 +32,7 @@ export const SETTINGS = {
   gst: '',
   established: '2015',
   owner: 'Amith Jain',
-  founderPhoto: '',
+  founderPhoto: 'https://res.cloudinary.com/duswrz4u/image/upload/v1793345021/liveteck/brand/ubnbutqaeixljwq3jhgo.jpg',
   mapEmbed:
     'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4590.818504980236!2d82.22744172501956!3d16.94942089580831!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a3827e16952bc8b%3A0x94fa96a00b65fa35!2sRajendra%20Glass%20%26%20Plywoods!5e1!3m2!1sen!2sin!4v1792232725568!5m2!1sen!2sin',
   mapLink: 'https://www.google.com/maps/search/?api=1&query=Temple+Street+Pydha+Kalyana+Mandapam+Kakinada',
