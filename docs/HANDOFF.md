@@ -3,7 +3,7 @@
 Last updated: 2026-10-30
 
 ## State
-Client change list (Oct 2026 PDF + chat) is coded, builds clean (`npm run build`), browser-tested on localhost (desktop 1536 + phone 390 frames). **Deployed 2026-10-30 (user pushed afe44e6).** Range pin restore is committed locally after that, not pushed yet.
+Client change list (Oct 2026 PDF + chat) is coded, builds clean (`npm run build`), browser-tested on localhost (desktop 1536 + phone 390 frames). **Deployed 2026-10-30: fdab42f pushed (includes range pin restore, founder photo, category pages); verified live on www.liveteckply.com.**
 
 Done in code:
 - Home stats + hero numbers are links (story / products / #range / #thickness, the 25 mm one opens the guide on 25 mm).
@@ -20,7 +20,7 @@ Done in code:
 
 ## Next steps
 1. Founder photo: **done (2026-10-30, commit 5e73304).** v04 portrait uploaded to Cloudinary (`liveteck/brand/ubnbutqaeixljwq3jhgo.jpg`, 262 KB JPEG of the 03-picked PNG) and set as `SETTINGS.founderPhoto` in defaults.js. Live Firestore settings have no founderPhoto key, so the default shows; the owner can still replace it in admin → Settings. Screenshots: `D:\all\liveteck\media\founder\04-site\`.
-2. Deploy only with the user's OK: `git push origin main` (Vercel Git integration builds it; no .vercel link on this PC). Pushes all local commits (6 ahead as of 5e73304). In Vercel, SITE_URL can stay unset or be `https://www.liveteckply.com`.
+2. Deploy = `git push origin main` with the user's OK (Vercel Git integration builds it in about a minute; no .vercel link on this PC). Last deploy: fdab42f, 2026-10-30. In Vercel, SITE_URL can stay unset or be `https://www.liveteckply.com`.
 3. After deploy: owner signs in to /admin once (applies the key-feature migration; toast confirms). Check a plywood card shows "Lifetime warranty · 100% Gurjan face veneer · BWP grade".
 4. SEO off-site (user/client actions): Google Search Console for www.liveteckply.com (submit sitemap, request indexing, remove/redirect the vercel.app property), Google Business Profile (category "Plywood supplier", link website, photos, ask customers for reviews), add social links in admin Settings. Settings map embed still points at "Rajendra Glass & Plywoods" (admin warns): replace with the verified Liveteck pin.
 5. Category landing pages: **done (2026-10-30), committed locally, not deployed.** Six pages: /plywood-kakinada, /block-boards-kakinada, /flexi-plywood-kakinada, /veneers-kakinada, /laminates-kakinada, /flush-doors-kakinada. Screenshots (390 + 1440): `D:\all\liveteck\media\seo-pages\`.
