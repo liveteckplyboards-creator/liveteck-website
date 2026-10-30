@@ -31,5 +31,5 @@ Done in code:
 ## Gotchas
 - Playwright is NOT installed globally on this PC; tests were done in the connected Chrome profile (hidden tabs run at ~2 fps, so motion looks slow there; it's time-based code).
 - `dist/` reads are blocked for tools; use a node script (see scratchpad pattern) to inspect the build.
-- Screenshots without Playwright: headless Chrome `--remote-debugging-port=9333` + `node D:ll\liveteck\media\seo-pages\shot.mjs <url> <width> <out.png>` (true 390 px emulation; plain `--window-size` can't go below ~500 px). Run against `npx vite preview` after `npm run build`.
+- Screenshots without Playwright: headless Chrome `--remote-debugging-port=9333` + `node D:\all\liveteck\media\seo-pages\shot.mjs <url> <width> <out.png>` (true 390 px emulation; plain `--window-size` can't go below ~500 px). Run against `npx vite preview` after `npm run build`.
 - Live product data lives in Firestore (`liveteck-3fd57`) and wins over `defaults.js`; firebase CLI is not logged in.
