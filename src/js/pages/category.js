@@ -6,7 +6,7 @@ import { gsap, reduced, glideTo } from '../core/motion.js';
 import { $, esc } from '../core/utils.js';
 import { icons } from '../core/icons.js';
 import { productCard, bindProductOpeners, openProduct, closeDrawer, bentoItem } from '../core/components.js';
-import { SPACES, CATEGORY_SPACES, CATEGORIES } from '../core/defaults.js';
+import { SPACES, CATEGORY_SPACES, CATEGORIES, landingFeatures } from '../core/defaults.js';
 
 const CAT = document.body.dataset.category;
 let DATA;
@@ -17,12 +17,14 @@ function render(data) {
   const items = data.products.filter(p => p.category === CAT);
   const feats = $('[data-cat-features]');
   // live categories saved before the key-features migration have no `features` yet: use the built-in list
-  const list = cat?.features ?? CATEGORIES.find(c => c.id === CAT)?.features ?? [];
+  const list = landingFeatures(cat?.features ? cat : CATEGORIES.find(c => c.id === CAT), items);
+  if (feats) feats.classList.toggle('kf-list--2', list.length % 3 === 1);
   if (feats) feats.innerHTML = list.map(f => `<li class="reveal">${icons.check}<span>${esc(f)}</span></li>`).join('');
   $('[data-cat-products]').className = `product-grid ${items.length === 1 ? 'product-grid--single' : items.length === 2 ? 'product-grid--2' : 'product-grid--3'}`;
   $('[data-cat-products]').innerHTML = items.map(p => productCard(p, data.categories)).join('');
   const spaces = $('[data-cat-spaces]');
-  if (spaces) spaces.innerHTML = (CATEGORY_SPACES[CAT] || []).map(t => SPACES.find(s => s.title === t)).filter(Boolean).map(bentoItem).join('');
+  const tiles = (CATEGORY_SPACES[CAT] || []).map(t => SPACES.find(s => s.title === t)).filter(Boolean);
+  if (spaces) { spaces.classList.toggle('bento--n2', tiles.length === 2); spaces.innerHTML = tiles.map(bentoItem).join(''); }
 }
 
 // #plywood-19mm opens that product's details (thickness table, outside links); #faq etc. glide to the section

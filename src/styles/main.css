@@ -1426,6 +1426,13 @@ img.is-missing { opacity: 0 !important; }
 .kf-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line-light); }
 .kf-list li { display: flex; align-items: center; gap: 16px; padding: clamp(20px, 2.2vw, 30px) 20px clamp(20px, 2.2vw, 30px) 0; border-bottom: 1px solid var(--line-light); font-family: var(--font-display); font-weight: 360; font-size: clamp(20px, 1.9vw, 27px); line-height: 1.15; letter-spacing: -0.01em; color: var(--ivory); min-width: 0; }
 .kf-list svg { flex: none; width: 38px; height: 38px; padding: 9px; border-radius: 50%; color: var(--gold-300); background: rgba(201,155,75,.12); border: 1px solid rgba(201,155,75,.25); }
+/* products page: each category heading links to its landing page */
+.cbh-link { color: var(--forest-700); font-weight: 600; text-decoration: underline; text-decoration-color: var(--gold-400); text-underline-offset: 4px; white-space: nowrap; }
+.cbh-link:hover { color: var(--gold-600); }
+/* two interiors: equal halves */
+.bento--n2 .bento-item:nth-child(n) { grid-column: span 6; grid-row: span 2; }
+/* key features: 4 or 7 items fill two columns better than three */
+@media (min-width: 981px) { .kf-list--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* the rest of the range */
 .more-band { padding-block: clamp(56px, 7vw, 96px); }
 .more-cats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
@@ -1437,6 +1444,7 @@ img.is-missing { opacity: 0 !important; }
   .kf-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .more-cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .more-cats a:last-child:nth-child(odd) { grid-column: span 2; } /* no card alone in a row */
+  .bento--n2 .bento-item:nth-child(n) { grid-column: span 2; grid-row: span 1; }
 }
 @media (max-width: 640px) {
   .kf-list { grid-template-columns: minmax(0, 1fr); }

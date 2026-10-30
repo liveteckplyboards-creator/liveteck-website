@@ -2,6 +2,7 @@ import { boot } from '../core/app.js';
 import { gsap, ScrollTrigger, initReveals, reduced, glideTo } from '../core/motion.js';
 import { $, $$, esc } from '../core/utils.js';
 import { productCard, bindProductOpeners, openProduct, closeDrawer, featuresOf } from '../core/components.js';
+import { CATEGORY_PAGES, categoryHref } from '../core/defaults.js';
 
 let DATA;
 let active = 'all';
@@ -31,7 +32,7 @@ function renderCatalogue() {
     <div class="cat-block" id="${esc(c.id)}">
       <div class="cat-block-head reveal">
         <h2>${esc(c.name)}</h2>
-        <p>${esc(c.description || c.short || '')}</p>
+        <p>${esc(c.description || c.short || '')}${CATEGORY_PAGES[c.id] ? ` <a class="cbh-link" href="${categoryHref(c.id)}">${esc(c.name)} in Kakinada</a>` : ''}</p>
       </div>
       <div class="product-grid ${items.length === 1 ? 'product-grid--single' : items.length === 2 ? 'product-grid--2' : 'product-grid--3'}">${items.map(p => productCard(p, cats)).join('')}</div>
     </div>`).join('') : `<div class="empty-state"><h3 class="h3">No products match “${esc(term)}”.</h3><p style="margin-top:12px">Try another search, or <button class="link-arrow" data-enquire>ask our team</button>.</p></div>`;

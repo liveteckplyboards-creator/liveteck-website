@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'node:path';
+import { resolve, basename } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { CATEGORY_PAGES as CATEGORY_SLUGS } from './src/js/core/defaults.js';
 
 const root = __dirname;
 // Live site origin for canonical/og:url, sitemap.xml and robots.txt — set SITE_URL in Vercel once the domain is final.
@@ -27,8 +28,8 @@ function htmlIncludes() {
   };
 }
 
-// One search landing page per category: <slug>.html at the root, served as /<slug>.
-const CATEGORY_PAGES = [{ id: 'plywood', slug: 'plywood-kakinada' }];
+// One search landing page per category: <slug>.html at the root, served as /<slug> (list in defaults.js).
+const CATEGORY_PAGES = Object.entries(CATEGORY_SLUGS).map(([id, slug]) => ({ id, slug }));
 
 // sitemap.xml + robots.txt at build time.
 function seoFiles() {
@@ -100,9 +101,9 @@ function categorySeo() {
     name: 'category-seo',
     apply: 'build',
     async transformIndexHtml(html, ctx) {
-      const page = CATEGORY_PAGES.find(c => ctx.filename.endsWith(`${c.slug}.html`));
+      const page = CATEGORY_PAGES.find(c => basename(ctx.filename) === `${c.slug}.html`); // exact: flexi-plywood-kakinada ends with plywood-kakinada
       if (!page) return html;
-      const { CATEGORIES, PRODUCTS } = await import('./src/js/core/defaults.js');
+      const { CATEGORIES, PRODUCTS, landingFeatures } = await import('./src/js/core/defaults.js');
       const cat = CATEGORIES.find(c => c.id === page.id);
       const items = PRODUCTS.filter(p => p.category === page.id);
       const list = {
@@ -113,7 +114,7 @@ function categorySeo() {
         })),
       };
       return html
-        .replace('<ul class="kf-list" data-cat-features></ul>', `<ul class="kf-list" data-cat-features>${(cat.features || []).map(f => `<li>${e(f)}</li>`).join('')}</ul>`)
+        .replace('<ul class="kf-list" data-cat-features></ul>', `<ul class="kf-list" data-cat-features>${landingFeatures(cat, items).map(f => `<li>${e(f)}</li>`).join('')}</ul>`)
         .replace(/(<div class="product-grid[^"]*" data-cat-products>)(<\/div>)/, (_, open, close) => `${open}${items.map(p => `
           <article class="product-card"><div class="pc-body"><h3>${e(p.name)}</h3><p class="pc-desc">${e(p.description || p.short)}</p>${p.applications?.length ? `<p>Ideal for: ${e(p.applications.join(', '))}</p>` : ''}</div></article>`).join('')}${close}`)
         .replace('</head>', `<script type="application/ld+json">${JSON.stringify(list)}</script>

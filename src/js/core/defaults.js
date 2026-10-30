@@ -225,11 +225,11 @@ export const THICKNESS_GUIDE = [
 ];
 
 export const SPACES = [
-  { title: 'Modular kitchens', href: '/products.html#laminates', tag: 'Kitchen', image: MEDIA.kitchen, uses: 'BWP plywood carcasses, laminates & veneers' },
-  { title: 'Wardrobes', href: '/products.html#plywood', tag: 'Bedroom', image: MEDIA.wardrobe, uses: '19 mm & 16 mm plywood, laminates' },
-  { title: 'Living & TV walls', href: '/products.html#veneer', tag: 'Living', image: MEDIA.living, uses: 'Veneer panelling, 12 mm ply' },
-  { title: 'Doors', href: '/products.html#flush-doors', tag: 'Entrances', image: MEDIA.doors, uses: 'Flush doors & block boards' },
-  { title: 'Offices', href: '/products.html#flexi-plywood', tag: 'Commercial', image: MEDIA.office, uses: 'Flexi ply, laminates, block boards' },
+  { title: 'Modular kitchens', href: '/laminates-kakinada.html', tag: 'Kitchen', image: MEDIA.kitchen, uses: 'BWP plywood carcasses, laminates & veneers' },
+  { title: 'Wardrobes', href: '/plywood-kakinada.html', tag: 'Bedroom', image: MEDIA.wardrobe, uses: '19 mm & 16 mm plywood, laminates' },
+  { title: 'Living & TV walls', href: '/veneers-kakinada.html', tag: 'Living', image: MEDIA.living, uses: 'Veneer panelling, 12 mm ply' },
+  { title: 'Doors', href: '/flush-doors-kakinada.html', tag: 'Entrances', image: MEDIA.doors, uses: 'Flush doors & block boards' },
+  { title: 'Offices', href: '/flexi-plywood-kakinada.html', tag: 'Commercial', image: MEDIA.office, uses: 'Flexi ply, laminates, block boards' },
   { title: 'Custom furniture', href: '/products.html', tag: 'Workshops', image: MEDIA.workshop, uses: 'The full Liveteck range' },
 ];
 
@@ -241,4 +241,25 @@ export const CATEGORY_SPACES = {
   veneer: ['Living & TV walls', 'Doors', 'Offices'],
   laminates: ['Modular kitchens', 'Wardrobes', 'Offices'],
   'flush-doors': ['Doors', 'Living & TV walls'],
+};
+
+// Search landing page per category (<slug>.html at the site root, served as /<slug>). Categories added later
+// in admin have none and keep linking to /products.html#<id>.
+export const CATEGORY_PAGES = {
+  plywood: 'plywood-kakinada',
+  'block-board': 'block-boards-kakinada',
+  'flexi-plywood': 'flexi-plywood-kakinada',
+  veneer: 'veneers-kakinada',
+  laminates: 'laminates-kakinada',
+  'flush-doors': 'flush-doors-kakinada',
+};
+export const categoryHref = id => (CATEGORY_PAGES[id] ? `/${CATEGORY_PAGES[id]}.html` : `/products.html#${id}`);
+
+// The key-features band on a landing page: the category's shared features, plus the product's own when the
+// category has a single product (flexi, veneers, laminates, flush doors), so short lists still read as a set.
+export const landingFeatures = (cat, products) => {
+  const seen = new Set();
+  const own = products.length === 1 ? products[0].features || [] : [];
+  return [...(cat?.features || []), ...own].map(f => String(f).trim())
+    .filter(f => f && !seen.has(f.toLowerCase()) && seen.add(f.toLowerCase()));
 };

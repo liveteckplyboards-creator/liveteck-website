@@ -4,7 +4,7 @@ import { $, $$, cld, cldVideo, srcset, esc } from '../core/utils.js';
 import { icons } from '../core/icons.js';
 import { productCard, reviewCarousel, bindProductOpeners, skeletonCards, stars, bentoItem } from '../core/components.js';
 import { initReviewForm } from '../core/review.js';
-import { THICKNESS_GUIDE, SPACES, img } from '../core/defaults.js';
+import { THICKNESS_GUIDE, SPACES, img, categoryHref } from '../core/defaults.js';
 
 let DATA;
 const isDesktop = () => matchMedia('(min-width: 981px)').matches;
@@ -13,7 +13,7 @@ function renderCategories(cats) {
   const track = $('[data-hscroll-track]');
   $$('.cat-card', track).forEach(n => n.remove());
   track.insertAdjacentHTML('beforeend', cats.map((c, i) => `
-    <a class="cat-card" href="/products.html#${esc(c.id)}" draggable="false">
+    <a class="cat-card" href="${esc(categoryHref(c.id))}" draggable="false">
       <img src="${cld(c.image, 'w_900,c_limit')}" srcset="${srcset(c.image, [480, 900, 1300])}" sizes="(max-width: 980px) 74vw, 26vw" alt="${esc(c.name)}" loading="lazy" draggable="false" />
       <div class="cc-top"><b>${String(i + 1).padStart(2, '0')}</b><span>${esc(c.meta || '')}</span></div>
       <div class="cc-body">
