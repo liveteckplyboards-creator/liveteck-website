@@ -23,9 +23,12 @@ Done in code:
 2. Deploy only with the user's OK (Vercel). In Vercel, SITE_URL can stay unset or be `https://www.liveteckply.com`.
 3. After deploy: owner signs in to /admin once (applies the key-feature migration; toast confirms). Check a plywood card shows "Lifetime warranty · 100% Gurjan face veneer · BWP grade".
 4. SEO off-site (user/client actions): Google Search Console for www.liveteckply.com (submit sitemap, request indexing, remove/redirect the vercel.app property), Google Business Profile (category "Plywood supplier", link website, photos, ask customers for reviews), add social links in admin Settings. Settings map embed still points at "Rajendra Glass & Plywoods" (admin warns): replace with the verified Liveteck pin.
-5. Optional SEO growth: one indexable landing page per category (/plywood-kakinada etc.) instead of #anchors.
+5. Category landing pages. **Plywood page built, waiting for the user's design approval** (`/plywood-kakinada`, committed locally). Screenshots: `D:ll\liveteck\media\seo-pages\plywood-kakinada_1440.png` / `_390.png`.
+   - How it works: `plywood-kakinada.html` (copy, FAQ + FAQPage schema, breadcrumb) + shared `src/js/pages/category.js` (`<body data-category>` → live key features, product cards, interiors from `CATEGORY_SPACES`). `vite.config.js` → `CATEGORY_PAGES` drives build input, sitemap, clean links, render-blocking script and `categorySeo` (prerendered features/cards + ItemList for crawlers).
+   - After approval: copy the page for block-board (`block-boards-kakinada`), flexi-plywood, veneer, laminates, flush-doors (own title/desc/h1/lead/guide/FAQ, real content only), add each to `CATEGORY_PAGES`, then point internal links at them: footer category list, home range cards (`home.js` renderCategories), `SPACES` hrefs, head.html OfferCatalog urls, products compare table / plywood-vs-block cards, and the "More from Liveteck" rows.
 
 ## Gotchas
 - Playwright is NOT installed globally on this PC; tests were done in the connected Chrome profile (hidden tabs run at ~2 fps, so motion looks slow there; it's time-based code).
 - `dist/` reads are blocked for tools; use a node script (see scratchpad pattern) to inspect the build.
+- Screenshots without Playwright: headless Chrome `--remote-debugging-port=9333` + `node D:ll\liveteck\media\seo-pages\shot.mjs <url> <width> <out.png>` (true 390 px emulation; plain `--window-size` can't go below ~500 px). Run against `npx vite preview` after `npm run build`.
 - Live product data lives in Firestore (`liveteck-3fd57`) and wins over `defaults.js`; firebase CLI is not logged in.

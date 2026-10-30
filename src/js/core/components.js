@@ -46,6 +46,14 @@ export function productCard(p, cats, { reveal = true } = {}) {
   </article>`;
 }
 
+/** An interior ("where it's used") tile: Home's applications bento and the category pages. */
+export const bentoItem = s => `
+    <a class="bento-item img-reveal" href="${esc(s.href || '/products.html')}">
+      <div class="bi-img" data-parallax="10"><img src="${cld(s.image, 'w_1200,c_limit')}" srcset="${srcset(s.image, [600, 1000, 1500])}" sizes="(max-width: 980px) 100vw, 50vw" alt="${esc(s.title)}" loading="lazy" /></div>
+      <span class="bi-go" aria-hidden="true">${icons.arrowUpRight}</span>
+      <div class="bi-label"><div><small>${esc(s.tag)}</small><h3>${esc(s.title)}</h3></div><span class="bi-uses">${esc(s.uses)}</span></div>
+    </a>`;
+
 /**
  * Glide a horizontal track to a position. Native smooth scrolling inside a scroll-snap track can lag
  * by seconds in Chrome (the frame shows the previous slide, or half of two), so it's animated here:

@@ -27,10 +27,13 @@ function htmlIncludes() {
   };
 }
 
+// One search landing page per category: <slug>.html at the root, served as /<slug>.
+const CATEGORY_PAGES = [{ id: 'plywood', slug: 'plywood-kakinada' }];
+
 // sitemap.xml + robots.txt at build time.
 function seoFiles() {
   const site = SITE;
-  const pages = [['/', '1.0', 'weekly'], ['/products', '0.9', 'weekly'], ['/about', '0.7', 'monthly'], ['/testimonials', '0.6', 'weekly'], ['/contact', '0.8', 'monthly']];
+  const pages = [['/', '1.0', 'weekly'], ['/products', '0.9', 'weekly'], ...CATEGORY_PAGES.map(c => [`/${c.slug}`, '0.9', 'weekly']), ['/about', '0.7', 'monthly'], ['/testimonials', '0.6', 'weekly'], ['/contact', '0.8', 'monthly']];
   const today = new Date().toISOString().slice(0, 10);
   return {
     name: 'seo-files',
@@ -45,7 +48,7 @@ function seoFiles() {
 
 // Production links point straight at the clean URLs the hosts serve (/products, not /products.html → 308 redirect),
 // in the pages and in the scripts that build links. Dev keeps the .html files Vite serves.
-const CLEAN = /(["'`(=])\/(about|products|contact|testimonials)\.html/g;
+const CLEAN = new RegExp(`(["'\`(=])\/(about|products|contact|testimonials|${CATEGORY_PAGES.map(c => c.slug).join('|')})\.html`, 'g');
 function cleanLinks() {
   return {
     name: 'clean-links',
@@ -90,6 +93,35 @@ function catalogueSeo() {
   };
 }
 
+// Category pages: same idea for their products and shared key features (category.js replaces it before first paint).
+function categorySeo() {
+  const e = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return {
+    name: 'category-seo',
+    apply: 'build',
+    async transformIndexHtml(html, ctx) {
+      const page = CATEGORY_PAGES.find(c => ctx.filename.endsWith(`${c.slug}.html`));
+      if (!page) return html;
+      const { CATEGORIES, PRODUCTS } = await import('./src/js/core/defaults.js');
+      const cat = CATEGORIES.find(c => c.id === page.id);
+      const items = PRODUCTS.filter(p => p.category === page.id);
+      const list = {
+        '@context': 'https://schema.org', '@type': 'ItemList', name: `${cat.name}, Liveteck Ply & Boards, Kakinada`,
+        itemListElement: items.map((p, i) => ({
+          '@type': 'ListItem', position: i + 1,
+          item: { '@type': 'Product', name: p.name, description: p.short, image: p.images?.[0], url: `${SITE}/${page.slug}#${p.id}`, category: cat.name, brand: { '@type': 'Brand', name: 'Liveteck Ply & Boards' } },
+        })),
+      };
+      return html
+        .replace('<ul class="kf-list" data-cat-features></ul>', `<ul class="kf-list" data-cat-features>${(cat.features || []).map(f => `<li>${e(f)}</li>`).join('')}</ul>`)
+        .replace(/(<div class="product-grid[^"]*" data-cat-products>)(<\/div>)/, (_, open, close) => `${open}${items.map(p => `
+          <article class="product-card"><div class="pc-body"><h3>${e(p.name)}</h3><p class="pc-desc">${e(p.description || p.short)}</p>${p.applications?.length ? `<p>Ideal for: ${e(p.applications.join(', '))}</p>` : ''}</div></article>`).join('')}${close}`)
+        .replace('</head>', `<script type="application/ld+json">${JSON.stringify(list)}</script>
+</head>`);
+    },
+  };
+}
+
 // Inline the shared site stylesheet (≈15 KB gzip) into the public pages: no render-blocking
 // request, and no wasted layout of the unstyled page while the CSS file is still downloading.
 function inlineCss() {
@@ -103,6 +135,7 @@ function inlineCss() {
         // Products builds its filters + catalogue in JS: hold first paint for that script so the
         // page doesn't paint empty and then jump (Chromium; other browsers ignore the attribute).
         if (ctx.filename.endsWith('products.html')) html = html.replace(/<script type="module" crossorigin src="(\/assets\/products-[^"]+\.js)"><\/script>/, '<script type="module" crossorigin blocking="render" src="$1"></script>');
+        if (CATEGORY_PAGES.some(c => ctx.filename.endsWith(`${c.slug}.html`))) html = html.replace(/<script type="module" crossorigin src="(\/assets\/[\w-]+\.js)"><\/script>/, '<script type="module" crossorigin blocking="render" src="$1"></script>');
         return html.replace(/<link rel="stylesheet"[^>]*href="\/(assets\/[^"]+\.css)"[^>]*>/g, (tag, file) => {
           const css = ctx.bundle[file];
           return css?.type === 'asset' ? `<style>${css.source}</style>` : tag;
@@ -113,7 +146,7 @@ function inlineCss() {
 }
 
 export default defineConfig({
-  plugins: [htmlIncludes(), seoFiles(), catalogueSeo(), cleanLinks(), inlineCss()],
+  plugins: [htmlIncludes(), seoFiles(), catalogueSeo(), categorySeo(), cleanLinks(), inlineCss()],
   build: {
     target: 'es2020',
     rollupOptions: {
@@ -123,6 +156,7 @@ export default defineConfig({
         products: resolve(root, 'products.html'),
         testimonials: resolve(root, 'testimonials.html'),
         contact: resolve(root, 'contact.html'),
+        ...Object.fromEntries(CATEGORY_PAGES.map(c => [c.slug, resolve(root, `${c.slug}.html`)])),
         admin: resolve(root, 'admin/index.html'),
       },
     },

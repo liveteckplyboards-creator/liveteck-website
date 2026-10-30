@@ -2,7 +2,7 @@ import { boot, whenEngaged } from '../core/app.js';
 import { gsap, ScrollTrigger, splitLines, splitWords, reduced, initReveals, idle, scrollLine, lenis } from '../core/motion.js';
 import { $, $$, cld, cldVideo, srcset, esc } from '../core/utils.js';
 import { icons } from '../core/icons.js';
-import { productCard, reviewCarousel, bindProductOpeners, skeletonCards, stars } from '../core/components.js';
+import { productCard, reviewCarousel, bindProductOpeners, skeletonCards, stars, bentoItem } from '../core/components.js';
 import { initReviewForm } from '../core/review.js';
 import { THICKNESS_GUIDE, SPACES, img } from '../core/defaults.js';
 
@@ -31,12 +31,7 @@ function renderFeatured(products, cats) {
 }
 
 function renderBento() {
-  $('[data-bento]').innerHTML = SPACES.map(s => `
-    <a class="bento-item img-reveal" href="${esc(s.href || '/products.html')}">
-      <div class="bi-img" data-parallax="10"><img src="${cld(s.image, 'w_1200,c_limit')}" srcset="${srcset(s.image, [600, 1000, 1500])}" sizes="(max-width: 980px) 100vw, 50vw" alt="${esc(s.title)}" loading="lazy" /></div>
-      <span class="bi-go" aria-hidden="true">${icons.arrowUpRight}</span>
-      <div class="bi-label"><div><small>${esc(s.tag)}</small><h3>${esc(s.title)}</h3></div><span class="bi-uses">${esc(s.uses)}</span></div>
-    </a>`).join('');
+  $('[data-bento]').innerHTML = SPACES.map(bentoItem).join('');
 }
 
 let tPending = false;
