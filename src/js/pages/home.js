@@ -288,8 +288,11 @@ function anatomy() {
  * An endless row (the cards are repeated after the originals): it drifts left at a calm pace while
  * on screen, eases to a stop under the mouse, a finger or keyboard focus, and picks up again after.
  * Drag or swipe it, or step card by card with the arrows; the pause button stops it for good.
- * Reduced motion: no drift, a plain swipe row. */
+ * The section is also pinned while you scroll past it: scrolling down moves the row sideways
+ * (on top of the drift), scrolling up moves it back.
+ * Reduced motion: no drift, no pin, a plain swipe row. */
 const RANGE_SPEED = 42; // px per second
+const RANGE_PIN = 0.75; // px of page scroll per px of sideways travel while pinned
 let range = null;
 function initRange() {
   const section = $('[data-range]');
@@ -301,6 +304,7 @@ function initRange() {
   let cards = [], setW = 1, step = 1, pos = 0, speed = 0, vel = 0, glide = null;
   let inView = false, hover = false, focus = false, touchUntil = 0, paused = reduced, raf = 0, last = 0;
   let drag = null;
+  let sOff = 0, sTarget = 0, pinned = null; // sideways travel from the page scroll (target, and eased toward it)
 
   const measure = () => {
     if (!cards.length) return;
@@ -310,14 +314,16 @@ function initRange() {
   };
   const wrap = (x) => ((x % setW) + setW) % setW;
   const paint = () => {
-    track.style.transform = `translate3d(${-pos}px,0,0)`;
-    bar.style.transform = `scaleX(${(pos / setW) || 0})`;
-    const n = String((Math.round(pos / step) % cards.length) + 1).padStart(2, '0');
+    const x = wrap(pos + sOff);
+    track.style.transform = `translate3d(${-x}px,0,0)`;
+    bar.style.transform = `scaleX(${(x / setW) || 0})`;
+    const n = String((Math.round(x / step) % cards.length) + 1).padStart(2, '0');
     if (curEl.textContent !== n) curEl.textContent = n;
   };
   const held = () => paused || hover || focus || drag || performance.now() < touchUntil || document.hidden;
   const frame = (now) => {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    sOff += (sTarget - sOff) * Math.min(1, dt * 7);
     if (glide) {
       const p = Math.min(1, (now - glide.t0) / glide.dur);
       pos = glide.from + (glide.to - glide.from) * (1 - Math.pow(1 - p, 3));
@@ -333,9 +339,10 @@ function initRange() {
     raf = inView ? requestAnimationFrame(frame) : 0;
   };
   const run = () => { if (!raf && inView && !reduced) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+  // glide so the row ends up at x (the scroll part stays where it is)
+  const glideTo = (x, dur) => { const cur = wrap(pos + sOff); glide = { from: pos, to: pos + x - cur, t0: performance.now(), dur }; };
   const go = (dir) => {
-    const target = (Math.round(pos / step) + dir) * step;
-    glide = { from: pos, to: target, t0: performance.now(), dur: 650 };
+    glideTo((Math.round(wrap(pos + sOff) / step) + dir) * step, 650);
     touchUntil = performance.now() + 4000; // let the visitor look at the card they chose
     run();
   };
@@ -352,7 +359,7 @@ function initRange() {
     vp.addEventListener('focusin', e => {
       focus = true;
       const c = e.target.closest('.cat-card');
-      if (c) { glide = { from: pos, to: c.offsetLeft - cards[0].offsetLeft, t0: performance.now(), dur: 500 }; run(); }
+      if (c) { glideTo(c.offsetLeft - cards[0].offsetLeft, 500); run(); }
     });
     vp.addEventListener('focusout', () => { focus = false; });
     // drag (mouse) and swipe (touch): the row follows the pointer; vertical swipes still scroll the page
@@ -394,6 +401,18 @@ function initRange() {
   });
 
   return {
+    /** Pin the section and let the page scroll move the row (ScrollTrigger loads later than the cards). */
+    pin() {
+      if (reduced || pinned) return;
+      section.classList.add('is-pinned');
+      // a pinned frame must fit the screen; on very short screens the row just drifts and swipes
+      if (section.offsetHeight > innerHeight + 2) { section.classList.remove('is-pinned'); return; }
+      pinned = ScrollTrigger.create({
+        trigger: section, start: 'top top', end: () => `+=${Math.round(setW * RANGE_PIN)}`,
+        pin: true, anticipatePin: 1, invalidateOnRefresh: true,
+        onUpdate: (st) => { sTarget = st.progress * setW; run(); },
+      });
+    },
     /** After the cards were (re)rendered: repeat them so the loop never shows a gap, then re-measure. */
     refresh() {
       $$('.cat-card[data-clone]', track).forEach(n => n.remove());
@@ -470,6 +489,7 @@ boot('home', {
     heroScroll();
     statement();
     anatomy();
+    range?.pin(); // pins are created in page order (anatomy sits above the range)
     stepsLine();
     audienceHover();
   },

@@ -3,11 +3,11 @@
 Last updated: 2026-10-30
 
 ## State
-Client change list (Oct 2026 PDF + chat) is coded, builds clean (`npm run build`), browser-tested on localhost (desktop 1536 + phone 390 frames). **Committed locally (e776b01, 2026-10-30), not pushed, not deployed.**
+Client change list (Oct 2026 PDF + chat) is coded, builds clean (`npm run build`), browser-tested on localhost (desktop 1536 + phone 390 frames). **Deployed 2026-10-30 (user pushed afe44e6).** Range pin restore is committed locally after that, not pushed yet.
 
 Done in code:
 - Home stats + hero numbers are links (story / products / #range / #thickness, the 25 mm one opens the guide on 25 mm).
-- "The range": the pinned scroll-sideways section was replaced by an endless auto-gliding row (`initRange` in `src/js/pages/home.js`): pauses on hover/touch/focus, drag/swipe, arrows, pause button, reduced-motion = swipe row.
+- "The range" (`initRange` in `src/js/pages/home.js`): endless auto-gliding row AND (restored 2026-10-30, client wanted both) pinned while scrolling: scroll down moves it sideways, up moves it back, idle = drift. Pauses on hover/touch/focus, drag/swipe, arrows, pause button. Pin is skipped when the frame cannot fit the screen (e.g. 390x667 phones; fits 390x844, 1366x657, 1440x900); reduced motion = plain swipe row. Screenshots: `D:ll\liveteck\mediaange-pin\`.
 - Product cards with 2+ photos cycle on their own (components.js "Card slideshows").
 - Thickness guide tours 6→25 mm on its own; plies grow smoothly, number counts up, timer bar on the active tab, pause button.
 - Why Liveteck cards, About brand-value cards, Who-we-serve rows, products compare table + plywood/block board cards are links.
