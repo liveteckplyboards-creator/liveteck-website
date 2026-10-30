@@ -34,6 +34,36 @@ export async function seedCatalogue(mode = 'missing') {
   return n;
 }
 
+/**
+ * One-time catalogue updates, applied the first time the owner signs in after a release.
+ * Each runs once (recorded in settings/site.migrations) and only touches the fields it names.
+ */
+const MIGRATIONS = {
+  // Oct 2026, client request: shared key features per category (lifetime warranty, 100% Gurjan face veneer),
+  // all plywood with the same list, block boards with their own.
+  'features-2026-10': async (batch, { cats, prods }) => {
+    const defC = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+    const defP = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+    cats.forEach(c => { if (defC[c.id] && !Array.isArray(c.features)) batch.update(doc(db, 'categories', c.id), { features: defC[c.id].features, updatedAt: serverTimestamp() }); });
+    prods.forEach(p => {
+      if (defP[p.id] && ['plywood', 'block-board'].includes(p.category)) batch.update(doc(db, 'products', p.id), { features: defP[p.id].features, updatedAt: serverTimestamp() });
+    });
+  },
+};
+
+export async function runMigrations() {
+  const settings = await get('settings', 'site');
+  const done = new Set(settings?.migrations || []);
+  const todo = Object.keys(MIGRATIONS).filter(k => !done.has(k));
+  if (!todo.length) return [];
+  const [cats, prods] = await Promise.all([list('categories'), list('products')]);
+  const batch = writeBatch(db);
+  for (const k of todo) await MIGRATIONS[k](batch, { cats, prods });
+  batch.set(doc(db, 'settings', 'site'), { migrations: [...done, ...todo] }, { merge: true });
+  await batch.commit();
+  return todo;
+}
+
 export async function exportAll() {
   const names = ['settings', 'categories', 'products', 'testimonials', 'enquiries', 'media'];
   const out = {};

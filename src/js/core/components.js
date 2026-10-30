@@ -6,12 +6,19 @@ import { SPACES, CATEGORY_SPACES } from './defaults.js';
 
 export const catName = (cats, id) => cats.find(c => c.id === id)?.name || id;
 
+/** Key features as shown: the category's shared features first, then the product's own (no repeats). */
+export const featuresOf = (p, cats) => {
+  const seen = new Set();
+  return [...(cats.find(c => c.id === p.category)?.features || []), ...(p.features || [])]
+    .map(f => String(f).trim()).filter(f => f && !seen.has(f.toLowerCase()) && seen.add(f.toLowerCase()));
+};
+
 const waText = p => `Hi Liveteck Ply & Boards, I'm interested in ${p.name}. Please share price and availability.`;
 
 export function productCard(p, cats, { reveal = true } = {}) {
   const imgs = (p.images || []).filter(Boolean);
   const many = imgs.length > 1;
-  const feats = (p.features || []).slice(0, 3);
+  const feats = featuresOf(p, cats).slice(0, 3);
   const pic = (u, i) => `<img src="${cld(u, 'w_800,c_limit')}" srcset="${srcset(u, [480, 800, 1200])}" sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 33vw" alt="${i ? '' : esc(p.name)}" loading="lazy" decoding="async" draggable="false" />`;
   return `
   <article class="product-card${reveal ? ' reveal' : ''}" data-product="${esc(p.id)}">
@@ -85,6 +92,36 @@ document.addEventListener('click', e => {
   const tr = $('[data-pc-track]', b.parentElement);
   glideX(tr, slideLeft(tr, trackIndex(tr) + +b.dataset.pcStep));
 }, true);
+
+/**
+ * Card slideshows: a card with several photos moves on to the next one every few seconds while it is
+ * on screen (cards in a row are staggered, so they never flip together). Paused while the visitor
+ * hovers, touches or focuses the card, while the product drawer is open, and off for reduced motion.
+ * New cards are picked up automatically (home, products, related lists).
+ */
+const SLIDE_MS = 3800;
+const slides = new Set();
+if (!reduced && 'IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { e.target._seen = e.isIntersecting; if (e.isIntersecting && !e.target._next) e.target._next = performance.now() + SLIDE_MS + (slides.size % 3) * 900; }), { threshold: 0.6 });
+  const watch = () => $$('.pc-media.has-many').forEach(m => { if (!slides.has(m)) { slides.add(m); io.observe(m); } });
+  let queued = 0;
+  new MutationObserver(() => { if (!queued) queued = setTimeout(() => { queued = 0; watch(); }, 250); }).observe(document.body, { childList: true, subtree: true });
+  watch();
+  document.addEventListener('touchstart', e => { const m = e.target.closest?.('.pc-media'); if (m) m._touched = performance.now(); }, { passive: true, capture: true });
+  setInterval(() => {
+    if (document.hidden || $('.drawer.is-open')) return;
+    const now = performance.now();
+    slides.forEach(m => {
+      if (!m.isConnected) { io.unobserve(m); slides.delete(m); return; }
+      if (!m._seen || now < m._next) return;
+      if (m.matches(':hover') || m.contains(document.activeElement) || now - (m._touched || 0) < 6000) { m._next = now + SLIDE_MS; return; }
+      const tr = $('[data-pc-track]', m);
+      const n = tr.children.length;
+      glideX(tr, slideLeft(tr, (trackIndex(tr) + 1) % n), 900);
+      m._next = now + SLIDE_MS;
+    });
+  }, 400);
+}
 
 /** Placeholder cards shown while live data loads on a first visit. */
 export function skeletonCards(n = 3) {
@@ -236,6 +273,7 @@ export function openProduct(p, cats, { products = [], start = 0 } = {}) {
   const s = getSettings();
   const related = products.filter(x => x.id !== p.id && x.category === p.category && x.published !== false).slice(0, 4);
   const others = related.length ? related : products.filter(x => x.id !== p.id && x.featured).slice(0, 4);
+  const feats = featuresOf(p, cats);
   $('.drawer-body', d).innerHTML = `
     <div class="pd">
       <div class="pd-gallery${many ? ' has-many' : ''}">
@@ -272,7 +310,7 @@ export function openProduct(p, cats, { products = [], start = 0 } = {}) {
         </div>
         <h2 id="pd-title">${esc(p.name)}</h2>
         <p class="pd-desc">${esc(p.description || p.short)}</p>
-        ${p.features?.length ? `<div class="pd-section"><h3>Key features</h3><ul class="feat-list">${p.features.map(f => `<li>${icons.check}<span>${esc(f)}</span></li>`).join('')}</ul></div>` : ''}
+        ${feats.length ? `<div class="pd-section"><h3>Key features</h3><ul class="feat-list">${feats.map(f => `<li>${icons.check}<span>${esc(f)}</span></li>`).join('')}</ul></div>` : ''}
         ${p.specs?.length ? `<div class="pd-section"><h3>Specifications</h3><table class="spec-table"><tbody>${p.specs.map(r => `<tr><th>${esc(r.label)}</th><td>${esc(r.value)}</td></tr>`).join('')}</tbody></table></div>` : ''}
         ${p.applications?.length ? `<div class="pd-section"><h3>Ideal for</h3><ul class="tg-uses">${p.applications.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : ''}
         ${others.length ? `<div class="pd-section pd-related"><h3>${related.length ? `More in ${esc(catName(cats, p.category))}` : 'You may also like'}</h3>

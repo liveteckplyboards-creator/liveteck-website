@@ -32,6 +32,7 @@ export const SETTINGS = {
   gst: '',
   established: '2015',
   owner: 'Amith Jain',
+  founderPhoto: '',
   mapEmbed:
     'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4590.818504980236!2d82.22744172501956!3d16.94942089580831!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a3827e16952bc8b%3A0x94fa96a00b65fa35!2sRajendra%20Glass%20%26%20Plywoods!5e1!3m2!1sen!2sin!4v1792232725568!5m2!1sen!2sin',
   mapLink: 'https://www.google.com/maps/search/?api=1&query=Temple+Street+Pydha+Kalyana+Mandapam+Kakinada',
@@ -45,39 +46,50 @@ export const SETTINGS = {
   announcement: '',
 };
 
+// Category `features` are shared key features: shown first on every product in that category
+// (so all plywood lists the same features). A product's own `features` follow after them.
+const WARRANTY = 'Lifetime warranty';
+const GURJAN_FACE = '100% Gurjan face veneer';
+
 export const CATEGORIES = [
   {
     id: 'plywood', name: 'Plywood', order: 1, image: img('products/plywood-19mm'),
+    features: [WARRANTY, GURJAN_FACE, 'BWP grade', 'Calibrated ply', 'Fire retardant', 'Termite proof', 'Borer proof', 'Selected timber', '4 times press'],
     meta: '6 · 9 · 12 · 16 · 19 mm',
     short: 'Cross-laminated hardwood boards for every kind of furniture and interior work.',
     description: 'Layers of hardwood veneer bonded at right angles under heat and pressure — strong, stable and easy to work. From thin back panels to heavy-duty wardrobe carcasses, there is a thickness for every job.',
   },
   {
     id: 'block-board', name: 'Block Boards', order: 2, image: img('products/blockboard-19mm'),
+    features: [WARRANTY, GURJAN_FACE, 'Solid wood-strip core', 'Resists sagging'],
     meta: '19 · 25 mm',
     short: 'Solid timber-strip core boards that stay stiff over long spans.',
     description: 'A core of solid wood strips sandwiched between veneers. Lighter than plywood of the same thickness and resistant to sagging — ideal for doors, long shelves, beds and table tops.',
   },
   {
     id: 'flexi-plywood', name: 'Flexi Plywood', order: 3, image: img('products/flexi-plywood'),
+    features: [WARRANTY, GURJAN_FACE],
     meta: 'Bendable',
     short: 'Bendable plywood for curves, columns and rounded furniture.',
     description: 'Engineered to bend smoothly without cracking, flexi plywood brings curved walls, arches, columns and reception counters to life.',
   },
   {
     id: 'veneer', name: 'Veneers', order: 4, image: img('products/veneer'),
+    features: [WARRANTY],
     meta: 'Natural wood',
     short: 'Real wood surfaces with natural, one-of-a-kind grain.',
     description: 'Thin slices of natural timber that give furniture, doors and wall panels the warmth and character of real wood — every sheet unique.',
   },
   {
     id: 'laminates', name: 'Laminates', order: 5, image: img('products/laminates-v2'),
+    features: [WARRANTY],
     meta: 'Decorative surfaces',
     short: 'Durable decorative finishes in woodgrains, solids and textures.',
     description: 'Hard-wearing decorative surfaces that resist scratches, stains and daily wear — in a wide range of woodgrains, solid colours and textures.',
   },
   {
     id: 'flush-doors', name: 'Flush Doors', order: 6, image: img('products/flush-doors-v2'),
+    features: [WARRANTY, GURJAN_FACE],
     meta: 'Ready to finish',
     short: 'Flat, clean-faced doors with a solid engineered core.',
     description: 'Smooth, flat doors with a sturdy core — ready to paint, polish, laminate or veneer to match any interior.',
@@ -92,7 +104,6 @@ export const PRODUCTS = [
     images: [img('products/plywood-19mm'), img('products/plywood-19mm-b')],
     short: 'Our thickest, strongest plywood — the go-to board for wardrobes, kitchen carcasses, beds and heavy-load furniture.',
     description: '19 mm plywood is the backbone of serious furniture. Built from cross-laminated hardwood veneers pressed under heat and pressure, it holds screws firmly, resists warping and carries heavy loads without sagging — ideal wherever strength matters most.',
-    features: ['100% Gurjan', 'BWP grade', 'Calibrated ply', 'Fire retardant', 'Termite proof', 'Borer proof', 'Selected timber', '4 times press'],
     specs: [
       { label: 'Thickness', value: '19 mm' },
       { label: 'Timber', value: '100% Gurjan' },
@@ -108,7 +119,6 @@ export const PRODUCTS = [
     images: [img('products/plywood-16mm')],
     short: 'A strong, versatile board for cabinet carcasses, shelves and modular furniture — a little lighter than 19 mm.',
     description: 'Balanced between strength and weight, 16 mm plywood is a favourite for modular furniture. It machines cleanly, takes laminates and veneers beautifully and keeps its shape over time.',
-    features: ['Cross-laminated for stability', 'Firm screw holding', 'Smooth, even face', 'Takes laminate & veneer well'],
     specs: [{ label: 'Thickness', value: '16 mm' }],
     applications: ['Cabinet carcasses', 'Shelves', 'Study tables', 'TV units'],
   }),
@@ -117,7 +127,6 @@ export const PRODUCTS = [
     images: [img('products/plywood-12mm')],
     short: 'Balanced strength and weight for partitions, cabinet sides, wall panelling and supported shutters.',
     description: 'A true all-rounder. 12 mm plywood is rigid enough for partitions and panelling yet light enough to handle easily on site — a dependable choice for interiors of every kind.',
-    features: ['Versatile mid thickness', 'Easy to handle & cut', 'Stable cross-laminated build', 'Great base for panelling'],
     specs: [{ label: 'Thickness', value: '12 mm' }],
     applications: ['Partitions', 'Wall panelling', 'Cabinet sides', 'Supported shutters'],
   }),
@@ -126,7 +135,6 @@ export const PRODUCTS = [
     images: [img('products/plywood-9mm')],
     short: 'Light yet rigid — ideal for drawer sides, light shelving, back panels and panelling bases.',
     description: '9 mm plywood gives you stiffness without bulk. It is perfect for drawers, light-duty shelves and backing panels where you need a stable, flat board.',
-    features: ['Light & rigid', 'Flat, stable sheets', 'Clean cutting', 'Good for drawers & backs'],
     specs: [{ label: 'Thickness', value: '9 mm' }],
     applications: ['Drawer sides', 'Light shelving', 'Back panels', 'Panelling base'],
   }),
@@ -135,7 +143,6 @@ export const PRODUCTS = [
     images: [img('products/plywood-6mm')],
     short: 'Thin and easy to work — for wardrobe and cabinet back panels, drawer bottoms and ceiling work.',
     description: 'Our thinnest plywood, made for jobs that need a flat, lightweight panel — backs of wardrobes and cabinets, drawer bottoms, ceilings and decorative work.',
-    features: ['Lightweight', 'Easy to bend slightly & fix', 'Ideal for backs & bottoms', 'Smooth surface'],
     specs: [{ label: 'Thickness', value: '6 mm' }],
     applications: ['Back panels', 'Drawer bottoms', 'Ceilings', 'Decorative work'],
   }),
@@ -144,7 +151,7 @@ export const PRODUCTS = [
     images: [img('products/blockboard-19mm')],
     short: 'Solid timber-strip core between veneers — lighter than plywood and stiff over long spans.',
     description: 'Block board pairs a core of solid wood strips with veneer faces. At 19 mm it is a lighter alternative to plywood for doors, long shelves and furniture that needs to stay straight across wide spans.',
-    features: ['Solid wood-strip core', 'Resists sagging', 'Lighter than plywood', 'Good for long spans'],
+    features: ['Lighter than plywood', 'Good for long spans'],
     specs: [{ label: 'Thickness', value: '19 mm' }, { label: 'Core', value: 'Solid timber strips' }],
     applications: ['Doors', 'Long shelves', 'Wardrobe shutters', 'Tables'],
   }),
@@ -153,7 +160,7 @@ export const PRODUCTS = [
     images: [img('products/blockboard-25mm')],
     short: 'Extra-thick block board for table tops, beds, long-span shelves and large doors where rigidity is critical.',
     description: 'When a piece has to stay rock-solid across a wide span, 25 mm block board delivers. Its thick timber-strip core gives table tops, beds and large doors exceptional rigidity.',
-    features: ['Extra thick 25 mm', 'Exceptional rigidity', 'Solid wood-strip core', 'For large, heavy pieces'],
+    features: ['Extra thick 25 mm', 'Exceptional rigidity', 'For large, heavy pieces'],
     specs: [{ label: 'Thickness', value: '25 mm' }, { label: 'Core', value: 'Solid timber strips' }],
     applications: ['Table tops', 'Beds', 'Large doors', 'Long-span shelving'],
   }),

@@ -1,7 +1,8 @@
 import { initialData, loadData, watchData } from './data.js';
 import { applySettings, initHeader, initEnquiryForms, initImageFallback, fillProductSelects } from './layout.js';
-import { initSmoothScroll, initReveals, initParallax, runIntro, initPageTransitions, magnetic, initSectionMotion, ScrollTrigger, loadScrollTrigger, reduced, idle } from './motion.js';
-import { cldVideo } from './utils.js';
+import { initSmoothScroll, initReveals, initParallax, runIntro, initPageTransitions, magnetic, initSectionMotion, ScrollTrigger, loadScrollTrigger, reduced, idle, glideTo } from './motion.js';
+import { cldVideo, $ } from './utils.js';
+import { initFaq } from './faq.js';
 import { vid } from './defaults.js';
 
 const loaded = new Promise(res => (document.readyState === 'complete' ? res() : addEventListener('load', res, { once: true })));
@@ -36,6 +37,7 @@ export async function boot(name, page = {}) {
   fillProductSelects(data.products);
   page.render?.(data, true);
   initEnquiryForms();
+  initFaq();
   initReveals();
 
   const fresh = loadData().catch(err => { console.warn('[liveteck] live data unavailable', err); return null; });
@@ -44,13 +46,13 @@ export async function boot(name, page = {}) {
   page.intro?.();
   // Scroll-driven scenes only matter once the visitor interacts (pointer, touch, wheel, scroll or key):
   // set them up then, in idle time — never in the loading window.
-  let motionReady = false, motionLive = false;
-  const setupMotion = async () => {
-    if (motionReady) return; motionReady = true;
+  let motionReady = null, motionLive = false;
+  // one shared promise: a second caller (the #section landing below) waits for the scenes to be finished
+  const setupMotion = () => (motionReady ||= (async () => {
     await Promise.all([page.ready?.(), loadScrollTrigger()]);
     await idle(() => page.motion?.(data));
     await idle(() => { initSectionMotion(); initParallax(); magnetic(); ScrollTrigger.refresh(); motionLive = true; });
-  };
+  })());
   engaged.then(setupMotion);
 
   const update = (next) => {
@@ -64,6 +66,16 @@ export async function boot(name, page = {}) {
   };
   update(await fresh);
   page.loaded?.(data);
+  // arriving through a link to a section (/about.html#story, /#thickness): build the scroll scenes first
+  // (pinned sections change the page height), then glide there and settle once more
+  if (!page.ownHash && location.hash.length > 1) {
+    let el = null;
+    try { el = $(decodeURIComponent(location.hash)); } catch { /* not a selector */ }
+    if (el) {
+      await setupMotion();
+      setTimeout(() => glideTo(el, { offset: -80, onComplete: () => glideTo(el, { offset: -80 }) }), 150);
+    }
+  }
   loaded.then(() => { if (motionLive) ScrollTrigger.refresh(); });
   whenEngaged().then(initBgVideos);
   // admin edits appear on open pages without a reload

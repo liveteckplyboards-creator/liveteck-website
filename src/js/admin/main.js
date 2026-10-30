@@ -76,6 +76,9 @@ onAuthStateChanged(auth, async (user) => {
   $('#who').textContent = user.email;
   show('app');
   route();
+  store.runMigrations()
+    .then(done => { if (done.length) { toast('Catalogue updated: new key features applied'); route(); } })
+    .catch(err => console.warn('[admin] catalogue update failed', err));
 });
 
 addEventListener('hashchange', () => { if (auth.currentUser) route(); });

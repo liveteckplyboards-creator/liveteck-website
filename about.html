@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="en" class="no-js">
+<html lang="en-IN" class="no-js">
 <head>
-  <!-- @include head.html path="/about" title="About Liveteck Ply &amp; Boards — Kakinada’s Plywood &amp; Interior Materials Specialist Since 2015" desc="Founded in 2015 by Amith Jain, Liveteck Ply & Boards supplies quality plywood, block boards, veneers, laminates and flush doors in Kakinada, Andhra Pradesh." lcp="brand/showroom" -->
+  <!-- @include head.html path="/about" title="About Liveteck Ply &amp; Boards | Plywood Dealer in Kakinada Since 2015" desc="Founded in 2015 by Amith Jain, Liveteck Ply & Boards is a Kakinada plywood and interior materials store for homeowners, carpenters, interior designers, architects and builders." lcp="brand/showroom" -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"{{site}}/"},{"@type":"ListItem","position":2,"name":"About","item":"{{site}}/about"}]}</script>
 </head>
 <body data-page="about">
   <!-- @include header.html -->
 
-  <main id="main">
+  <main id="main"> 
     <section class="page-hero grain">
       <div class="ph-media" data-bg-video="video/interior-film"><!-- @include hero-img.html id="brand/showroom" --></div>
       <div class="container on-dark">
@@ -21,7 +22,7 @@
     <!-- story -->
     <section class="section bg-ivory" id="after-hero" aria-labelledby="story-title">
       <div class="container">
-        <div class="story-grid"> 
+        <div class="story-grid" id="story">
           <div class="story-media">
             <figure class="img-reveal"><img src="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_800,c_limit/liveteck/brand/craft" srcset="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_400,c_limit/liveteck/brand/craft 400w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_600,c_limit/liveteck/brand/craft 600w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_900,c_limit/liveteck/brand/craft 900w" sizes="(max-width: 980px) 45vw, 22vw" alt="Hands inspecting the layered edge of a plywood sheet" loading="lazy" /></figure>
             <figure class="img-reveal"><img src="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_800,c_limit/liveteck/spaces/workshop" srcset="https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_400,c_limit/liveteck/spaces/workshop 400w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_600,c_limit/liveteck/spaces/workshop 600w, https://res.cloudinary.com/duswrz4u/image/upload/f_auto,q_auto,w_900,c_limit/liveteck/spaces/workshop 900w" sizes="(max-width: 980px) 45vw, 22vw" alt="Carpenter working with plywood in a workshop" loading="lazy" /></figure>
@@ -49,10 +50,11 @@
     <section class="section bg-ivory-2" aria-labelledby="philo-title">
       <div class="container">
         <div class="founder">
-          <div class="founder-card reveal">
+          <div class="founder-card reveal" data-founder>
+            <img class="fc-photo" data-founder-photo alt="Amith Jain, founder of Liveteck Ply &amp; Boards, Kakinada" loading="lazy" decoding="async" hidden />
             <div class="fc-k"><!-- @include k.svg --></div>
             <span class="eyebrow">Founder</span>
-            <div class="fc-name" style="margin-top:20px">Amith Jain</div>
+            <div class="fc-name" style="margin-top:20px" data-s="owner">Amith Jain</div>
             <div class="fc-role">Owner · Liveteck Ply &amp; Boards</div>
           </div>
           <div>
@@ -77,36 +79,36 @@
             <p class="lead reveal" style="margin-top:26px">These are the attributes we hold ourselves to — with every product, every customer and every order.</p>
           </div>
           <div class="vs-cards">
-            <article class="vs-card vs-card--0" style="--i:0" data-vs-card>
+            <a class="vs-card vs-card--0" style="--i:0" data-vs-card href="/products.html">
               <div class="vs-top"><span class="vs-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="vs-num">01<small>/06</small></span></div>
               <h3>Quality</h3>
               <p>Carefully chosen products with good faces, firm cores and clean edges.</p>
-            </article>
-            <article class="vs-card vs-card--1" style="--i:1" data-vs-card>
+            <span class="card-go">See the range <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="vs-card vs-card--1" style="--i:1" data-vs-card href="/#anatomy">
               <div class="vs-top"><span class="vs-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></span><span class="vs-num">02<small>/06</small></span></div>
               <h3>Strength</h3>
               <p>Boards that carry load, hold screws and stand up to everyday use.</p>
-            </article>
-            <article class="vs-card vs-card--2" style="--i:2" data-vs-card>
+            <span class="card-go">Inside every sheet <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="vs-card vs-card--2" style="--i:2" data-vs-card href="/products.html#plywood">
               <div class="vs-top"><span class="vs-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><span class="vs-num">03<small>/06</small></span></div>
               <h3>Durability</h3>
               <p>Materials made to last for years in real homes and working spaces.</p>
-            </article>
-            <article class="vs-card vs-card--0" style="--i:3" data-vs-card>
+            <span class="card-go">Plywood features <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="vs-card vs-card--0" style="--i:3" data-vs-card href="#trust">
               <div class="vs-top"><span class="vs-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span class="vs-num">04<small>/06</small></span></div>
               <h3>Trust</h3>
               <p>Clear information and honest recommendations — no surprises.</p>
-            </article>
-            <article class="vs-card vs-card--1" style="--i:4" data-vs-card>
+            <span class="card-go">Why customers trust us <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="vs-card vs-card--1" style="--i:4" data-vs-card href="/testimonials.html">
               <div class="vs-top"><span class="vs-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span><span class="vs-num">05<small>/06</small></span></div>
               <h3>Customer satisfaction</h3>
               <p>We measure success by how happy you are with the finished result.</p>
-            </article>
-            <article class="vs-card vs-card--2" style="--i:5" data-vs-card>
+            <span class="card-go">Read reviews <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+            <a class="vs-card vs-card--2" style="--i:5" data-vs-card href="/contact.html">
               <div class="vs-top"><span class="vs-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></span><span class="vs-num">06<small>/06</small></span></div>
               <h3>Professional service</h3>
               <p>Quick responses, expert guidance and dependable supply.</p>
-            </article>
+            <span class="card-go">Talk to our team <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
           </div>
         </div>
       </div>
@@ -138,7 +140,7 @@
     </section>
 
     <!-- why trust -->
-    <section class="section bg-ivory cv" aria-labelledby="trust-title">
+    <section class="section bg-ivory cv" id="trust" aria-labelledby="trust-title">
       <div class="container">
         <div class="intro-grid">
           <div>

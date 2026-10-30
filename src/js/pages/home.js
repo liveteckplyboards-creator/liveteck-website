@@ -13,8 +13,8 @@ function renderCategories(cats) {
   const track = $('[data-hscroll-track]');
   $$('.cat-card', track).forEach(n => n.remove());
   track.insertAdjacentHTML('beforeend', cats.map((c, i) => `
-    <a class="cat-card" href="/products.html#${esc(c.id)}">
-      <img src="${cld(c.image, 'w_900,c_limit')}" srcset="${srcset(c.image, [480, 900, 1300])}" sizes="(max-width: 640px) 80vw, 32vw" alt="${esc(c.name)}" loading="lazy" />
+    <a class="cat-card" href="/products.html#${esc(c.id)}" draggable="false">
+      <img src="${cld(c.image, 'w_900,c_limit')}" srcset="${srcset(c.image, [480, 900, 1300])}" sizes="(max-width: 980px) 74vw, 26vw" alt="${esc(c.name)}" loading="lazy" draggable="false" />
       <div class="cc-top"><b>${String(i + 1).padStart(2, '0')}</b><span>${esc(c.meta || '')}</span></div>
       <div class="cc-body">
         <h3>${esc(c.name)}</h3>
@@ -22,6 +22,7 @@ function renderCategories(cats) {
         <div class="cc-row"><span class="cc-meta">Explore</span><span class="cc-go">${icons.arrowUpRight}</span></div>
       </div>
     </a>`).join(''));
+  (range ||= initRange()).refresh();
 }
 
 function renderFeatured(products, cats) {
@@ -64,28 +65,63 @@ function renderTestimonials(list, { skeleton = false } = {}) {
 }
 
 /* ---------- thickness guide ----------
- * Tabs, the arrows inside the visual, a swipe across it (phones) or ←/→ all change the board.
- * On phones the visual sits right above the tabs, so the change is always in view. */
+ * Plays through the boards on its own (6 → 9 → … → 25 mm, then round again) while it is on screen:
+ * the edge grows ply by ply and the number counts up. The visitor takes over with the tabs, the arrows
+ * inside the visual, a swipe across it (phones) or ←/→; hovering or focusing it pauses the tour, and
+ * the pause button stops it. On phones the visual sits right above the tabs, so the change is in view. */
+const TG_MS = 3400;
+const MAX_PLIES = Math.max(...THICKNESS_GUIDE.map(t => t.plies));
 function initThickness() {
+  const box = $('.tg');
   const tabs = $('[data-tg-tabs]');
   const visual = $('[data-tg-visual]');
   const info = $('[data-tg-info]');
-  tabs.innerHTML = THICKNESS_GUIDE.map(t => `<button class="tg-tab" role="tab" aria-selected="false" data-tg="${t.id}">${t.label}<small>${t.unit}</small></button>`).join('');
+  const edge = $('[data-tg-edge]');
+  const num = $('[data-tg-num]');
+  const playBtn = $('[data-tg-play]');
+  tabs.innerHTML = THICKNESS_GUIDE.map(t => `<button class="tg-tab" role="tab" aria-selected="false" data-tg="${t.id}">${t.label}<small>${t.unit}</small><i class="tg-timer" aria-hidden="true"></i></button>`).join('');
+  // a fixed set of plies (faces at both ends): thinner boards fold the inner plies away, so the change is a smooth grow/shrink
+  $('.plies', edge).innerHTML = Array.from({ length: MAX_PLIES }, (_, i) => `<i class="${i === 0 || i === MAX_PLIES - 1 ? 'face' : ''}"></i>`).join('');
+  const plies = $$('.plies i', edge);
   const maxH = Math.max(...THICKNESS_GUIDE.map(t => t.h));
-  let cur = -1;
+  let cur = -1, shown = 0, countRaf = 0;
   // the edge is drawn to scale: the thickest board fills most of the visual's height
   const scale = () => Math.min(isDesktop() ? 1.9 : 1.5, (visual.clientHeight - 90) / maxH);
+  const countTo = (to) => {
+    cancelAnimationFrame(countRaf);
+    const from = shown, t0 = performance.now(), dur = reduced ? 0 : 700;
+    const tick = (now) => {
+      const p = dur ? Math.min(1, (now - t0) / dur) : 1;
+      shown = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+      num.innerHTML = `${shown}<small>mm</small>`;
+      if (p < 1) countRaf = requestAnimationFrame(tick);
+    };
+    countRaf = requestAnimationFrame(tick);
+  };
   const draw = () => {
     const t = THICKNESS_GUIDE[cur];
     const h = `${Math.max(14, t.h * scale())}px`;
-    const edge = $('[data-tg-edge]');
     edge.style.setProperty('--h', h);
     $('[data-tg-bar]').style.setProperty('--h', h);
     edge.classList.toggle('blockboard', !!t.blockboard);
-    $('.plies', edge).innerHTML = t.blockboard ? '<i></i>' : Array.from({ length: t.plies }, (_, i) => `<i class="${i === 0 || i === t.plies - 1 ? 'face' : ''}"></i>`).join('');
-    $('[data-tg-num]').innerHTML = `${t.label}<small>${t.unit}</small>`;
+    const inner = t.blockboard ? 0 : t.plies - 2;
+    plies.forEach((p, k) => p.classList.toggle('off', k > 0 && k < MAX_PLIES - 1 && k > inner));
   };
-  const select = (i, { animate = true } = {}) => {
+
+  /* the tour */
+  const holds = new Set();
+  let playing = !reduced, timer = null, inView = false;
+  const sync = () => {
+    clearTimeout(timer);
+    const run = playing && inView && !holds.size && !document.hidden;
+    box.classList.toggle('is-touring', run);
+    if (run) timer = setTimeout(() => select((cur + 1) % THICKNESS_GUIDE.length, { tour: true }), TG_MS);
+  };
+  const hold = (k, on) => { on ? holds.add(k) : holds.delete(k); sync(); };
+  let resume;
+  const handOver = () => { hold('picked', true); clearTimeout(resume); resume = setTimeout(() => hold('picked', false), 9000); };
+
+  const select = (i, { animate = true, tour = false } = {}) => {
     i = Math.max(0, Math.min(THICKNESS_GUIDE.length - 1, i));
     if (i === cur) return;
     cur = i;
@@ -97,9 +133,14 @@ function initThickness() {
       <div style="margin-top:26px"><button class="link-arrow" data-open-product="${t.product}">View product ${icons.arrow}</button></div>`;
     $$('[data-tg-step]', visual).forEach(b => { b.disabled = +b.dataset.tgStep < 0 ? i === 0 : i === THICKNESS_GUIDE.length - 1; });
     draw();
+    countTo(+t.label);
     if (animate && !reduced) {
       [info, visual].forEach(el => { el.classList.remove(el === info ? 'is-swap' : 'is-bump'); void el.offsetWidth; el.classList.add(el === info ? 'is-swap' : 'is-bump'); });
     }
+    if (!tour) handOver();
+    // restart the active tab's timer bar
+    box.classList.remove('is-touring'); void box.offsetWidth;
+    sync();
   };
   const step = (d) => select(cur + d);
   tabs.addEventListener('click', e => { const b = e.target.closest('[data-tg]'); if (b) select(THICKNESS_GUIDE.findIndex(t => t.id === b.dataset.tg)); });
@@ -118,8 +159,26 @@ function initThickness() {
     const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
     if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.2) step(dx < 0 ? 1 : -1);
   }, { passive: true });
+  box.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hold('hover', true); });
+  box.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hold('hover', false); });
+  box.addEventListener('focusin', e => { if (e.target.matches(':focus-visible')) hold('focus', true); });
+  box.addEventListener('focusout', () => hold('focus', false));
+  document.addEventListener('visibilitychange', sync);
+  playBtn.hidden = reduced;
+  playBtn.addEventListener('click', () => {
+    playing = !playing;
+    playBtn.innerHTML = playing ? icons.pause : icons.play;
+    playBtn.setAttribute('aria-label', playing ? 'Pause the thickness tour' : 'Play the thickness tour');
+    if (playing) { holds.delete('picked'); select((cur + 1) % THICKNESS_GUIDE.length, { tour: true }); } else sync();
+  });
+  new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }, { threshold: 0.35 }).observe(visual);
+  // links that jump here for one board ("25 mm" in the stats) open on that board
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-tg-go]');
+    if (a) select(THICKNESS_GUIDE.findIndex(t => t.id === a.dataset.tgGo));
+  });
   new ResizeObserver(() => cur >= 0 && draw()).observe(visual);
-  select(THICKNESS_GUIDE.findIndex(t => t.id === '19'), { animate: false });
+  select(0, { animate: false, tour: true });
 }
 
 /* ---------- hero ---------- */
@@ -230,80 +289,133 @@ function anatomy() {
     .to($$('.ply-label', stack), { opacity: 0, duration: 0.1 }, 0.8);
 }
 
-/* ---------- horizontal categories (pinned, desktop and phones) ----------
- * Scrolling down moves the range sideways. People on phones often try to swipe the cards
- * sideways instead — so that works too: a horizontal swipe drives the same scroll position,
- * with momentum, and the row settles on a card. A hint and a counter say what's going on. */
-function hscroll() {
-  const section = $('[data-hscroll]');
-  const track = $('[data-hscroll-track]');
-  const bar = $('[data-hs-progress]');
-  const hint = $('[data-hs-hint]');
-  const curEl = $('[data-hs-cur]');
-  if (reduced) return;
-  const touch = matchMedia('(hover: none), (pointer: coarse)').matches;
-  section.classList.add('is-pinned');
-  section.classList.toggle('is-touch', touch);
-  const cards = $$('.cat-card', track);
-  $('[data-hs-total]').textContent = String(cards.length).padStart(2, '0');
-  const dist = () => Math.max(0, track.scrollWidth - innerWidth);
-  // scroll progress at which each card sits at the left edge (0 = the intro panel)
-  let stops = [0];
-  const measureStops = () => {
-    const d = dist() || 1;
-    const pad = parseFloat(getComputedStyle(track).paddingLeft) || 0;
-    stops = [0, ...cards.map(c => Math.min(1, Math.max(0, (c.offsetLeft - pad) / d)))];
-  };
-  let hinted = false;
-  const tween = gsap.to(track, {
-    x: () => -dist(), ease: 'none',
-    scrollTrigger: {
-      trigger: section, start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: touch ? 0.4 : 0.8, invalidateOnRefresh: true, anticipatePin: 1,
-      onRefresh: measureStops,
-      // phones: the row settles on a card once the finger lifts
-      snap: touch ? { snapTo: (p) => stops.reduce((a, b) => (Math.abs(b - p) < Math.abs(a - p) ? b : a), 0), duration: { min: 0.25, max: 0.6 }, delay: 0.06, ease: 'power2.inOut' } : undefined,
-      onUpdate: self => {
-        gsap.set(bar, { scaleX: self.progress });
-        let i = 0; stops.forEach((s, k) => { if (self.progress >= s - 0.02) i = k; });
-        curEl.textContent = String(Math.max(1, i)).padStart(2, '0');
-        if (!hinted && self.progress > 0.06) { hinted = true; hint.classList.add('is-off'); }
-      },
-    },
-  });
-  measureStops();
-  if (touch) $('[data-hs-hint-text]').textContent = 'Scroll down or swipe';
-  gsap.from(cards, { y: 80, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: section, start: 'top 70%' } });
-  if (!touch) return;
+/* ---------- the range: category cards that glide on their own (desktop and phones) ----------
+ * An endless row (the cards are repeated after the originals): it drifts left at a calm pace while
+ * on screen, eases to a stop under the mouse, a finger or keyboard focus, and picks up again after.
+ * Drag or swipe it, or step card by card with the arrows; the pause button stops it for good.
+ * Reduced motion: no drift, a plain swipe row. */
+const RANGE_SPEED = 42; // px per second
+let range = null;
+function initRange() {
+  const section = $('[data-range]');
+  const vp = $('[data-range-viewport]', section);
+  const track = $('[data-hscroll-track]', section);
+  const bar = $('[data-hs-progress]', section);
+  const curEl = $('[data-hs-cur]', section);
+  const playBtn = $('[data-range-play]', section);
+  let cards = [], setW = 1, step = 1, pos = 0, speed = 0, vel = 0, glide = null;
+  let inView = false, hover = false, focus = false, touchUntil = 0, paused = reduced, raf = 0, last = 0;
+  let drag = null;
 
-  // sideways swipe → the same scroll the pin maps to the row (1px of scroll = 1px of travel)
-  const st = tween.scrollTrigger;
-  let x0 = 0, y0 = 0, s0 = 0, mode = null, lastX = 0, lastT = 0, vx = 0;
-  const wrap = $('.hscroll-wrap', section);
-  wrap.addEventListener('touchstart', e => {
-    const t = e.touches[0];
-    x0 = lastX = t.clientX; y0 = t.clientY; s0 = scrollY; lastT = performance.now(); vx = 0; mode = null;
-  }, { passive: true });
-  wrap.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    const dx = t.clientX - x0, dy = t.clientY - y0;
-    if (!mode && Math.hypot(dx, dy) > 8) mode = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
-    if (mode !== 'x') return;
-    const now = performance.now();
-    vx = (t.clientX - lastX) / Math.max(1, now - lastT); lastX = t.clientX; lastT = now;
-    scrollTo(0, Math.min(st.end, Math.max(st.start, s0 - dx)));
-    if (!hinted) { hinted = true; hint.classList.add('is-off'); }
-  }, { passive: true });
-  wrap.addEventListener('touchend', () => {
-    if (mode !== 'x') return;
-    mode = null;
-    // a flick carries on (momentum), then settles on the nearest card in the direction of travel
-    const d = dist() || 1;
-    const p = (scrollY - st.start) / d;
-    const projected = p - (vx * 260) / d;
-    let target = stops.reduce((a, b) => (Math.abs(b - projected) < Math.abs(a - projected) ? b : a), 0);
-    const y = st.start + target * d;
-    lenis ? lenis.scrollTo(y, { duration: 0.7, easing: t => 1 - Math.pow(1 - t, 3) }) : scrollTo({ top: y, behavior: 'smooth' });
-  }, { passive: true });
+  const measure = () => {
+    if (!cards.length) return;
+    const first = track.querySelector('.cat-card[data-clone]');
+    setW = first ? first.offsetLeft - cards[0].offsetLeft : track.scrollWidth;
+    step = cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : setW;
+  };
+  const wrap = (x) => ((x % setW) + setW) % setW;
+  const paint = () => {
+    track.style.transform = `translate3d(${-pos}px,0,0)`;
+    bar.style.transform = `scaleX(${(pos / setW) || 0})`;
+    const n = String((Math.round(pos / step) % cards.length) + 1).padStart(2, '0');
+    if (curEl.textContent !== n) curEl.textContent = n;
+  };
+  const held = () => paused || hover || focus || drag || performance.now() < touchUntil || document.hidden;
+  const frame = (now) => {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (glide) {
+      const p = Math.min(1, (now - glide.t0) / glide.dur);
+      pos = glide.from + (glide.to - glide.from) * (1 - Math.pow(1 - p, 3));
+      if (p >= 1) { pos = wrap(pos); glide = null; }
+    } else if (!drag) {
+      // free coast after a flick, then the drift eases back in (or out while held)
+      if (Math.abs(vel) > 2) { pos += vel * dt; vel *= Math.pow(0.04, dt); }
+      speed += ((held() ? 0 : RANGE_SPEED) - speed) * Math.min(1, dt * 3);
+      pos += speed * dt;
+    }
+    if (!glide) pos = wrap(pos);
+    paint();
+    raf = inView ? requestAnimationFrame(frame) : 0;
+  };
+  const run = () => { if (!raf && inView && !reduced) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+  const go = (dir) => {
+    const target = (Math.round(pos / step) + dir) * step;
+    glide = { from: pos, to: target, t0: performance.now(), dur: 650 };
+    touchUntil = performance.now() + 4000; // let the visitor look at the card they chose
+    run();
+  };
+  const setPaused = (on) => {
+    paused = on;
+    playBtn.setAttribute('aria-label', on ? 'Play moving cards' : 'Pause moving cards');
+    playBtn.innerHTML = on ? icons.play : icons.pause;
+  };
+
+  if (!reduced) {
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; run(); }, { rootMargin: '100px' }).observe(vp);
+    vp.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hover = true; });
+    vp.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hover = false; });
+    vp.addEventListener('focusin', e => {
+      focus = true;
+      const c = e.target.closest('.cat-card');
+      if (c) { glide = { from: pos, to: c.offsetLeft - cards[0].offsetLeft, t0: performance.now(), dur: 500 }; run(); }
+    });
+    vp.addEventListener('focusout', () => { focus = false; });
+    // drag (mouse) and swipe (touch): the row follows the pointer; vertical swipes still scroll the page
+    vp.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      glide = null; vel = 0;
+      drag = { x: e.clientX, pos, moved: false, lastX: e.clientX, lastT: performance.now(), id: e.pointerId };
+    });
+    vp.addEventListener('pointermove', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved && Math.abs(dx) > 6) { drag.moved = true; vp.classList.add('is-dragging'); vp.setPointerCapture?.(e.pointerId); }
+      if (!drag.moved) return;
+      const now = performance.now();
+      vel = -((e.clientX - drag.lastX) / Math.max(1, now - drag.lastT)) * 1000;
+      drag.lastX = e.clientX; drag.lastT = now;
+      pos = wrap(drag.pos - dx); paint();
+    });
+    const end = (e) => {
+      if (!drag || (e && e.pointerId !== drag.id)) return;
+      const moved = drag.moved;
+      drag = null;
+      vp.classList.remove('is-dragging');
+      if (moved) { speed = 0; touchUntil = performance.now() + 1800; } else vel = 0;
+      if (e?.pointerType !== 'mouse') touchUntil = Math.max(touchUntil, performance.now() + 2500);
+      run();
+    };
+    vp.addEventListener('pointerup', end);
+    vp.addEventListener('pointercancel', end);
+    // a drag must never open the card it ended on
+    vp.addEventListener('click', e => { if (vp.classList.contains('is-dragging')) e.preventDefault(); }, true);
+    document.addEventListener('visibilitychange', run);
+    new ResizeObserver(() => { measure(); pos = wrap(pos); paint(); }).observe(vp);
+  }
+  section.addEventListener('click', e => {
+    const s = e.target.closest('[data-range-step]');
+    if (s) { reduced ? vp.scrollBy({ left: +s.dataset.rangeStep * step }) : go(+s.dataset.rangeStep); }
+    if (e.target.closest('[data-range-play]')) { setPaused(!paused); run(); }
+  });
+
+  return {
+    /** After the cards were (re)rendered: repeat them so the loop never shows a gap, then re-measure. */
+    refresh() {
+      $$('.cat-card[data-clone]', track).forEach(n => n.remove());
+      cards = $$('.cat-card', track);
+      $('[data-hs-total]', section).textContent = String(cards.length).padStart(2, '0');
+      if (!cards.length) return;
+      if (!reduced) {
+        const copies = Math.max(1, Math.ceil((vp.clientWidth + 400) / Math.max(1, track.scrollWidth)));
+        for (let k = 0; k < copies; k++) cards.forEach(c => {
+          const cl = c.cloneNode(true);
+          cl.dataset.clone = '1'; cl.setAttribute('aria-hidden', 'true'); cl.tabIndex = -1;
+          track.appendChild(cl);
+        });
+      }
+      measure(); pos = wrap(pos); paint(); run();
+    },
+  };
 }
 
 function stepsLine() {
@@ -354,11 +466,6 @@ boot('home', {
   loaded(data) {
     rendered.then(() => {
       if (tPending) { renderTestimonials(data.testimonials); initReveals(); }
-      // old /testimonials links land here: bring the reviews into view
-      if (location.hash === '#testimonials') {
-        const go = (immediate) => lenis ? lenis.scrollTo('#testimonials', { offset: -80, immediate, onComplete: () => !immediate && go(true) }) : $('#testimonials').scrollIntoView();
-        setTimeout(() => go(false), 300);
-      }
     });
     whenEngaged().then(() => startHeroVideo(data.settings));
   },
@@ -368,7 +475,6 @@ boot('home', {
     heroScroll();
     statement();
     anatomy();
-    hscroll();
     stepsLine();
     audienceHover();
   },

@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="en" class="no-js">
+<html lang="en-IN" class="no-js">
 <head>
-  <!-- @include head.html path="/" title="Liveteck Ply &amp; Boards — Premium Plywood, Block Boards, Veneers &amp; Laminates in Kakinada" desc="Liveteck Ply & Boards, Kakinada — plywood (6–19 mm), block boards, flexi plywood, veneers, laminates and flush doors for homes, interiors and projects. Serving since 2015. Call or WhatsApp +91 99121 53030." lcp="brand/hero-poster" -->
+  <!-- @include head.html path="/" title="Plywood Shop in Kakinada | Liveteck Ply &amp; Boards" desc="Plywood dealers on Temple Street, Kakinada: BWP plywood with 100% Gurjan face veneer (6–19 mm), block boards, flexi ply, veneers, laminates and flush doors. Lifetime warranty. Call +91 99121 53030." lcp="brand/hero-poster" -->
 </head>
 <body data-page="home">
   <!-- @include intro.html -->
@@ -18,7 +18,7 @@
         <div class="hero-grid">
           <div>
             <div class="hero-meta" data-hero-fade>
-              <span class="eyebrow">Est. 2015 · Kakinada</span>
+              <span class="eyebrow">Plywood shop in Kakinada · Est. 2015</span>
             </div>
             <h1 class="display" data-hero-title data-split="1"><span class="split-line" style="--li:0"><span>Quality materials.</span></span><span class="split-line" style="--li:1"><span><em>Beautiful spaces.</em></span></span></h1>
             <p class="hero-sub" data-s="heroSubtitle">Plywood, block boards, flexi ply, veneers, laminates and flush doors — chosen for strength, finished for beauty. Serving Kakinada since 2015.</p>
@@ -28,9 +28,9 @@
             </div>
           </div>
           <aside class="hero-badge" data-hero-fade aria-label="At a glance">
-            <div class="hb-row"><b>2015</b><span>Serving<br>since</span></div>
-            <div class="hb-row"><b>11</b><span>Core<br>products</span></div>
-            <div class="hb-row"><b>6</b><span>Material<br>categories</span></div>
+            <a class="hb-row" href="/about.html#story"><b>2015</b><span>Serving<br>since</span></a>
+            <a class="hb-row" href="/products.html"><b>11</b><span>Core<br>products</span></a>
+            <a class="hb-row" href="#range"><b>6</b><span>Material<br>categories</span></a>
           </aside>
         </div>
       </div>
@@ -60,16 +60,16 @@
           </figure>
         </div>
         <div class="stats">
-          <div class="stat reveal"><b data-count="2015" data-from="1990">2015</b><span>Year established</span></div>
-          <div class="stat reveal"><b data-count="11">11</b><span>Core products</span></div>
-          <div class="stat reveal"><b data-count="6">6</b><span>Material categories</span></div>
-          <div class="stat reveal"><b data-count="25">25<sup>mm</sup></b><span>Up to · block boards</span></div>
+          <a class="stat reveal" href="/about.html#story"><b data-count="2015" data-from="1990">2015</b><span>Year established</span><i class="stat-go" aria-hidden="true">Our story</i></a>
+          <a class="stat reveal" href="/products.html"><b data-count="11">11</b><span>Core products</span><i class="stat-go" aria-hidden="true">All products</i></a>
+          <a class="stat reveal" href="#range"><b data-count="6">6</b><span>Material categories</span><i class="stat-go" aria-hidden="true">The range</i></a>
+          <a class="stat reveal" href="#thickness" data-tg-go="25"><b data-count="25">25<sup>mm</sup></b><span>Up to · block boards</span><i class="stat-go" aria-hidden="true">Thickness guide</i></a>
         </div>
       </div>
     </section>
 
     <!-- ============ ANATOMY (pinned) ============ -->
-    <section class="anatomy bg-deep grain" aria-labelledby="anatomy-title" data-anatomy>
+    <section class="anatomy bg-deep grain" id="anatomy" aria-labelledby="anatomy-title" data-anatomy>
       <div class="container anatomy-inner">
         <div class="anatomy-copy on-dark">
           <span class="eyebrow">Inside every sheet</span>
@@ -99,20 +99,27 @@
     </section>
 
     <!-- ============ CATEGORIES (horizontal) ============ -->
-    <section class="hscroll bg-forest grain" aria-labelledby="range-title" data-hscroll>
-      <div class="hscroll-wrap">
-        <div class="hscroll-track" data-hscroll-track>
-          <div class="hs-intro on-dark">
-            <span class="eyebrow">The range</span>
-            <h2 class="h2" id="range-title">Six materials.<br><em>Endless</em> spaces.</h2>
-            <p class="lead">Everything your project needs, from the carcass to the finishing surface — under one roof.</p>
-            <div><a class="btn btn--ghost" href="/products.html">View all products</a></div>
+    <!-- the cards glide on their own (pause on hover, touch or focus); drag, swipe or use the arrows -->
+    <section class="range bg-forest grain" id="range" aria-labelledby="range-title" data-range>
+      <div class="range-inner">
+        <div class="hs-intro on-dark">
+          <span class="eyebrow">The range</span>
+          <h2 class="h2" id="range-title">Six materials.<br><em>Endless</em> spaces.</h2>
+          <p class="lead">Everything your project needs, from the carcass to the finishing surface — under one roof.</p>
+          <div><a class="btn btn--ghost" href="/products.html">View all products</a></div>
+          <div class="range-ctrl">
+            <span class="hs-count" aria-hidden="true"><b data-hs-cur>01</b> / <span data-hs-total>06</span></span>
+            <div class="range-btns">
+              <button type="button" class="range-btn" data-range-play aria-label="Pause moving cards"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5" width="3.4" height="14" rx="1"/><rect x="13.6" y="5" width="3.4" height="14" rx="1"/></svg></button>
+              <button type="button" class="range-btn" data-range-step="-1" aria-label="Previous material"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+              <button type="button" class="range-btn" data-range-step="1" aria-label="Next material"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
           </div>
-          <!-- category cards injected -->
+        </div>
+        <div class="range-viewport" data-range-viewport>
+          <div class="range-track" data-hscroll-track><!-- category cards injected --></div>
         </div>
       </div>
-      <div class="hs-hint" data-hs-hint aria-hidden="true"><span class="hs-hint-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span><span data-hs-hint-text>Scroll down to explore</span></div>
-      <div class="hs-count" aria-hidden="true"><b data-hs-cur>01</b> / <span data-hs-total>06</span></div>
       <div class="hs-progress" aria-hidden="true"><i data-hs-progress></i></div>
     </section>
 
@@ -134,7 +141,7 @@
     </section>
 
     <!-- ============ THICKNESS GUIDE ============ -->
-    <section class="section bg-ivory-2 cv" aria-labelledby="tg-title">
+    <section class="section bg-ivory-2 cv" id="thickness" aria-labelledby="tg-title">
       <div class="container">
         <div class="tg">
           <div class="tg-head">
@@ -149,6 +156,7 @@
             <div class="tg-ruler" aria-hidden="true"><span class="bar" data-tg-bar></span><b data-tg-num>19<small>mm</small></b></div>
             <span class="tg-caption" aria-hidden="true">Edge profile · to scale</span>
             <div class="tg-step" data-tg-stepper>
+              <button type="button" data-tg-play aria-label="Pause the thickness tour"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="5" width="3.4" height="14" rx="1"/><rect x="13.6" y="5" width="3.4" height="14" rx="1"/></svg></button>
               <button type="button" data-tg-step="-1" aria-label="Thinner board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
               <button type="button" data-tg-step="1" aria-label="Thicker board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
             </div>
@@ -158,7 +166,7 @@
     </section>
 
     <!-- ============ APPLICATIONS (bento) ============ -->
-    <section class="section bg-ivory cv" aria-labelledby="spaces-title">
+    <section class="section bg-ivory cv" id="spaces" aria-labelledby="spaces-title">
       <div class="container">
         <div class="section-head section-head--split">
           <div>
@@ -182,18 +190,18 @@
           <p class="lead reveal">Quality, strength, durability, trust, customer satisfaction and professional service — the six things we never compromise on.</p>
         </div>
         <div class="why-grid">
-          <article class="why-card reveal"><span class="wc-num">01</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><h3>Quality you can see</h3><p>Visit our store, inspect the sheets and check the edges, faces and finish before you buy.</p></article>
-          <article class="why-card reveal"><span class="wc-num">02</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></span><h3>Complete range</h3><p>Plywood, block boards, flexi ply, veneers, laminates and flush doors — one supplier for the whole job.</p></article>
-          <article class="why-card reveal"><span class="wc-num">03</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2"/></svg></span><h3>Expert guidance</h3><p>Not sure which thickness or grade you need? We help you choose the right material for each part of your project.</p></article>
-          <article class="why-card reveal"><span class="wc-num">04</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/></svg></span><h3>Trusted since 2015</h3><p>A decade of serving Kakinada with dependable products and straightforward, customer-first service.</p></article>
-          <article class="why-card reveal"><span class="wc-num">05</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span><h3>For pros &amp; homeowners</h3><p>Whether you are building one wardrobe or fitting out a whole project, you get the same care and attention.</p></article>
-          <article class="why-card reveal"><span class="wc-num">06</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></span><h3>Quick response</h3><p>Call or WhatsApp us for prices, availability and advice — we reply fast so your work keeps moving.</p></article>
+          <a class="why-card reveal" href="#visit"><span class="wc-num">01</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><h3>Quality you can see</h3><p>Visit our store, inspect the sheets and check the edges, faces and finish before you buy.</p><span class="card-go">Visit the store <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+          <a class="why-card reveal" href="/products.html"><span class="wc-num">02</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></span><h3>Complete range</h3><p>Plywood, block boards, flexi ply, veneers, laminates and flush doors — one supplier for the whole job.</p><span class="card-go">See all products <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+          <a class="why-card reveal" href="#thickness"><span class="wc-num">03</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z"/><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2"/></svg></span><h3>Expert guidance</h3><p>Not sure which thickness or grade you need? We help you choose the right material for each part of your project.</p><span class="card-go">Thickness guide <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+          <a class="why-card reveal" href="/about.html"><span class="wc-num">04</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/></svg></span><h3>Trusted since 2015</h3><p>A decade of serving Kakinada with dependable products and straightforward, customer-first service.</p><span class="card-go">Our story <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+          <a class="why-card reveal" href="#who-we-serve"><span class="wc-num">05</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span><h3>For pros &amp; homeowners</h3><p>Whether you are building one wardrobe or fitting out a whole project, you get the same care and attention.</p><span class="card-go">Who we serve <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+          <a class="why-card reveal" href="/contact.html"><span class="wc-num">06</span><span class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></span><h3>Quick response</h3><p>Call or WhatsApp us for prices, availability and advice — we reply fast so your work keeps moving.</p><span class="card-go">Get in touch <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
         </div>
       </div>
     </section>
 
     <!-- ============ WHO WE SERVE ============ -->
-    <section class="section bg-ivory" aria-labelledby="aud-title">
+    <section class="section bg-ivory" id="who-we-serve" aria-labelledby="aud-title">
       <div class="container">
         <div class="section-head section-head--split">
           <div>
@@ -203,12 +211,12 @@
           <p class="lead reveal">From a single homeowner’s kitchen to a builder’s full project — we supply the materials and the know-how.</p>
         </div>
         <div class="aud-list" data-aud>
-          <div class="aud-row reveal" data-img="spaces/kitchen"><span class="ar-num">01</span><h3>Homeowners</h3><p>Kitchens, wardrobes and furniture for the home you have dreamed of.</p></div>
-          <div class="aud-row reveal" data-img="spaces/living"><span class="ar-num">02</span><h3>Interior <em>designers</em></h3><p>Veneers, laminates and boards that bring your concepts to life.</p></div>
-          <div class="aud-row reveal" data-img="spaces/office"><span class="ar-num">03</span><h3>Architects</h3><p>Reliable materials for residential and commercial specifications.</p></div>
-          <div class="aud-row reveal" data-img="brand/showroom"><span class="ar-num">04</span><h3>Contractors &amp; <em>builders</em></h3><p>Consistent supply and the right material for every stage of the site.</p></div>
-          <div class="aud-row reveal" data-img="spaces/workshop"><span class="ar-num">05</span><h3>Carpenters</h3><p>Boards that cut clean, hold screws firm and finish beautifully.</p></div>
-          <div class="aud-row reveal" data-img="spaces/wardrobe"><span class="ar-num">06</span><h3>Furniture <em>makers</em></h3><p>Plywood, block boards and surfaces for quality furniture production.</p></div>
+          <a class="aud-row reveal" href="#spaces" data-img="spaces/kitchen"><span class="ar-num">01</span><h3>Homeowners</h3><p>Kitchens, wardrobes and furniture for the home you have dreamed of.</p></a>
+          <a class="aud-row reveal" href="/products.html#veneer" data-img="spaces/living"><span class="ar-num">02</span><h3>Interior <em>designers</em></h3><p>Veneers, laminates and boards that bring your concepts to life.</p></a>
+          <a class="aud-row reveal" href="/products.html" data-img="spaces/office"><span class="ar-num">03</span><h3>Architects</h3><p>Reliable materials for residential and commercial specifications.</p></a>
+          <a class="aud-row reveal" href="/contact.html#enquiry" data-img="brand/showroom"><span class="ar-num">04</span><h3>Contractors &amp; <em>builders</em></h3><p>Consistent supply and the right material for every stage of the site.</p></a>
+          <a class="aud-row reveal" href="#thickness" data-img="spaces/workshop"><span class="ar-num">05</span><h3>Carpenters</h3><p>Boards that cut clean, hold screws firm and finish beautifully.</p></a>
+          <a class="aud-row reveal" href="/products.html#block-board" data-img="spaces/wardrobe"><span class="ar-num">06</span><h3>Furniture <em>makers</em></h3><p>Plywood, block boards and surfaces for quality furniture production.</p></a>
         </div>
       </div>
       <div class="aud-float" aria-hidden="true"><img alt="" /></div>
@@ -267,7 +275,7 @@
     </section>
 
     <!-- ============ LOCATION ============ -->
-    <section class="section bg-ivory cv" aria-labelledby="visit-title">
+    <section class="section bg-ivory cv" id="visit" aria-labelledby="visit-title">
       <div class="container">
         <div class="cta-map reveal">
           <div class="cm-copy on-dark">

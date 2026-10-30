@@ -316,7 +316,7 @@ function productForm(p, cats, done) {
     ${area('short', 'Short description (cards)', p.short, { rows: 2 })}
     ${area('description', 'Full description (detail view)', p.description, { rows: 4 })}
     <div class="grid-2">
-      ${area('features', 'Key features — one per line', (p.features || []).join('\n'), { rows: 6 })}
+      ${area('features', 'Extra key features — one per line', (p.features || []).join('\n'), { rows: 6, hint: 'Shown after the category’s shared key features (edit those under Categories). Leave empty to show only the shared list.' })}
       ${area('specs', 'Specifications — “Label: Value” per line', (p.specs || []).map(s => `${s.label}: ${s.value}`).join('\n'), { rows: 6 })}
     </div>
     ${area('applications', 'Ideal for — one per line', (p.applications || []).join('\n'), { rows: 3 })}
@@ -394,6 +394,7 @@ function categoryForm(c, done) {
     <div class="grid-2">${field('meta', 'Small label', c.meta, { hint: 'e.g. 19 · 25 mm' })}<div class="field"><label>Sort order</label><input type="number" name="order" value="${esc(c.order ?? 10)}" /></div></div>
     ${area('short', 'Short description', c.short, { rows: 2 })}
     ${area('description', 'Description (products page)', c.description, { rows: 3 })}
+    ${area('features', 'Shared key features — one per line', (c.features || []).join('\n'), { rows: 5, hint: 'Shown first on every product in this category (e.g. the same list for all plywood). Each product’s own key features follow after these.' })}
     <div data-media></div><p class="error-text" data-err hidden></p></form>`);
   const media = mediaField({ label: 'Category image', urls: [c.image], multiple: false, folder: 'liveteck/categories' });
   $('[data-media]', body).replaceWith(media.el);
@@ -408,7 +409,7 @@ function categoryForm(c, done) {
         if (!fd.name.trim() || !id) { const e = $('[data-err]', body); e.hidden = false; e.textContent = 'Please enter a name.'; return; }
         btn.disabled = true;
         try {
-          await store.set('categories', id, { name: fd.name.trim(), meta: fd.meta.trim(), short: fd.short.trim(), description: fd.description.trim(), image: media.value(), order: Number(fd.order) || 0 });
+          await store.set('categories', id, { name: fd.name.trim(), meta: fd.meta.trim(), short: fd.short.trim(), description: fd.description.trim(), features: lines(fd.features), image: media.value(), order: Number(fd.order) || 0 });
           toast('Category saved'); close(); done();
         } catch (e) { toast(e.message, 'err'); btn.disabled = false; }
       },
@@ -537,6 +538,7 @@ export async function settings(view) {
     <div class="form-section"><h3>Business</h3>
       <div class="grid-2">${field('businessName', 'Business name', s.businessName)}${field('tagline', 'Tagline', s.tagline)}</div>
       <div class="grid-2">${field('owner', 'Owner', s.owner)}${field('established', 'Established', s.established)}</div>
+      <div class="grid-2"><div data-founder-photo></div><p class="small muted" style="align-self:center">Shown with the founder’s name on the About page. A portrait (4:5, face centred) looks best. Remove it to show the logo card instead.</p></div>
     </div>
     <div class="form-section"><h3>Contact</h3>
       <div class="grid-2">${field('phone', 'Phone (display)', s.phone, { hint: 'e.g. +91 99121 53030' })}${field('whatsapp', 'WhatsApp number', s.whatsapp, { hint: 'Digits with country code, e.g. 919912153030' })}</div>
@@ -567,6 +569,8 @@ export async function settings(view) {
   </div></div>`;
   const vid = mediaField({ label: 'Hero background video', urls: [s.heroVideo], multiple: false, folder: 'liveteck/video', accept: 'video/*' });
   const poster = mediaField({ label: 'Hero poster image (shown while video loads)', urls: [s.heroPoster], multiple: false, folder: 'liveteck/brand' });
+  const founder = mediaField({ label: 'Founder photo', urls: [s.founderPhoto], multiple: false, folder: 'liveteck/brand' });
+  $('[data-founder-photo]', view).replaceWith(founder.el);
   $('[data-hero-video]', view).replaceWith(vid.el);
   $('[data-hero-poster]', view).replaceWith(poster.el);
 
@@ -576,7 +580,7 @@ export async function settings(view) {
     Object.entries(fd).forEach(([k, v]) => { v = String(v).trim(); k.startsWith('social.') ? (data.social[k.slice(7)] = v) : (data[k] = v); });
     const m = data.mapEmbed.match(/src="([^"]+)"/); if (m) data.mapEmbed = m[1];
     data.whatsapp = data.whatsapp.replace(/\D/g, '');
-    data.heroVideo = vid.value(); data.heroPoster = poster.value();
+    data.heroVideo = vid.value(); data.heroPoster = poster.value(); data.founderPhoto = founder.value();
     e.target.disabled = true;
     try { await store.saveSettings(data); toast('Settings saved — the website updates instantly'); settings(view); }
     catch (err) { toast(err.message, 'err'); e.target.disabled = false; }

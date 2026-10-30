@@ -49,20 +49,50 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "HomeAndConstructionBusiness",
-  "name": "Liveteck Ply & Boards",
-  "description": "Plywood, block boards, flexi plywood, veneers, laminates and flush doors in Kakinada, Andhra Pradesh.",
-  "foundingDate": "2015",
-  "founder": { "@type": "Person", "name": "Amith Jain" },
-  "telephone": "+91-99121-53030",
-  "image": "https://res.cloudinary.com/duswrz4u/image/upload/f_jpg,q_auto,w_1200/liveteck/brand/hero-poster",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Temple Street, Beside Pydha Kalyana Mandapam",
-    "addressLocality": "Kakinada",
-    "addressRegion": "Andhra Pradesh",
-    "addressCountry": "IN"
-  },
-  "logo": "https://res.cloudinary.com/duswrz4u/image/upload/liveteck/brand/liveteck-logo.png"
+  "@graph": [
+    {
+      "@type": ["HardwareStore", "HomeAndConstructionBusiness"],
+      "@id": "{{site}}/#business",
+      "name": "Liveteck Ply & Boards",
+      "alternateName": ["Liveteck Ply and Boards", "Liveteck Plywood Kakinada"],
+      "url": "{{site}}/",
+      "description": "Plywood shop and dealer in Kakinada, Andhra Pradesh: BWP plywood with 100% Gurjan face veneer (6, 9, 12, 16, 19 mm), block boards (19, 25 mm), flexi plywood, veneers, laminates and flush doors for homeowners, carpenters, interior designers, architects and builders.",
+      "slogan": "Quality Materials. Beautiful Spaces.",
+      "foundingDate": "2015",
+      "founder": { "@type": "Person", "name": "Amith Jain" },
+      "telephone": "+91-99121-53030",
+      "image": "https://res.cloudinary.com/duswrz4u/image/upload/f_jpg,q_auto,w_1200/liveteck/brand/hero-poster",
+      "logo": "https://res.cloudinary.com/duswrz4u/image/upload/liveteck/brand/liveteck-logo.png",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Temple Street, Beside Pydha Kalyana Mandapam",
+        "addressLocality": "Kakinada",
+        "addressRegion": "Andhra Pradesh",
+        "addressCountry": "IN"
+      },
+      "areaServed": [{ "@type": "City", "name": "Kakinada" }, { "@type": "State", "name": "Andhra Pradesh" }],
+      "knowsAbout": ["Plywood", "BWP plywood", "Gurjan plywood", "Block boards", "Flexi plywood", "Wood veneers", "Laminates", "Flush doors", "Modular kitchen materials", "Wardrobe materials"],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Plywood and interior materials",
+        "itemListElement": [
+          { "@type": "OfferCatalog", "name": "Plywood (6, 9, 12, 16, 19 mm)", "url": "{{site}}/products#plywood" },
+          { "@type": "OfferCatalog", "name": "Block boards (19, 25 mm)", "url": "{{site}}/products#block-board" },
+          { "@type": "OfferCatalog", "name": "Flexi plywood", "url": "{{site}}/products#flexi-plywood" },
+          { "@type": "OfferCatalog", "name": "Veneers", "url": "{{site}}/products#veneer" },
+          { "@type": "OfferCatalog", "name": "Laminates", "url": "{{site}}/products#laminates" },
+          { "@type": "OfferCatalog", "name": "Flush doors", "url": "{{site}}/products#flush-doors" }
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "{{site}}/#website",
+      "url": "{{site}}/",
+      "name": "Liveteck Ply & Boards",
+      "inLanguage": "en-IN",
+      "publisher": { "@id": "{{site}}/#business" }
+    }
+  ]
 }
 </script>

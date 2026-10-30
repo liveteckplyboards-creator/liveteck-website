@@ -1,7 +1,7 @@
 import { boot } from '../core/app.js';
 import { gsap, ScrollTrigger, initReveals, reduced, glideTo } from '../core/motion.js';
 import { $, $$, esc } from '../core/utils.js';
-import { productCard, bindProductOpeners, openProduct, closeDrawer } from '../core/components.js';
+import { productCard, bindProductOpeners, openProduct, closeDrawer, featuresOf } from '../core/components.js';
 
 let DATA;
 let active = 'all';
@@ -17,7 +17,7 @@ function renderFilters(cats, products) {
 function renderCatalogue() {
   const { categories: cats, products } = DATA;
   const q = term.trim().toLowerCase();
-  const match = p => !q || [p.name, p.short, p.thickness, ...(p.features || []), ...(p.applications || [])].join(' ').toLowerCase().includes(q);
+  const match = p => !q || [p.name, p.short, p.thickness, ...featuresOf(p, cats), ...(p.applications || [])].join(' ').toLowerCase().includes(q);
   const blocks = cats
     .filter(c => active === 'all' || c.id === active)
     .map(c => ({ c, items: products.filter(p => p.category === c.id && match(p)) }))
@@ -66,6 +66,7 @@ function handleHash() {
 }
 
 boot('products', {
+  ownHash: true, // #category / #product links are handled by handleHash
   render(data, first) {
     DATA = data;
     renderFilters(data.categories, data.products);
