@@ -3,7 +3,7 @@
 Last updated: 2026-10-30
 
 ## State
-Client change list (Oct 2026 PDF + chat) is coded, builds clean (`npm run build`), browser-tested on localhost (desktop 1536 + phone 390 frames). **Not deployed, not committed** (git isn't installed on this PC: install Git for Windows, then commit).
+Client change list (Oct 2026 PDF + chat) is coded, builds clean (`npm run build`), browser-tested on localhost (desktop 1536 + phone 390 frames). **Committed locally (e776b01, 2026-10-30), not pushed, not deployed.**
 
 Done in code:
 - Home stats + hero numbers are links (story / products / #range / #thickness, the 25 mm one opens the guide on 25 mm).
@@ -20,7 +20,7 @@ Done in code:
 
 ## Next steps
 1. Founder photo: client/user to approve `D:\all\liveteck\media\founder\03-picked\liveteck_founder-portrait_about_4x5_v04_20261030.png` (v03 = fallback; prompts in `media/founder/prompts.md`). Then upload it in admin → Settings → Founder photo → Save (or set `SETTINGS.founderPhoto` default in defaults.js to its Cloudinary URL).
-2. Install Git, commit locally. Deploy only with the user's OK (Vercel). In Vercel, SITE_URL can stay unset or be `https://www.liveteckply.com`.
+2. Deploy only with the user's OK (Vercel). In Vercel, SITE_URL can stay unset or be `https://www.liveteckply.com`.
 3. After deploy: owner signs in to /admin once (applies the key-feature migration; toast confirms). Check a plywood card shows "Lifetime warranty · 100% Gurjan face veneer · BWP grade".
 4. SEO off-site (user/client actions): Google Search Console for www.liveteckply.com (submit sitemap, request indexing, remove/redirect the vercel.app property), Google Business Profile (category "Plywood supplier", link website, photos, ask customers for reviews), add social links in admin Settings. Settings map embed still points at "Rajendra Glass & Plywoods" (admin warns): replace with the verified Liveteck pin.
 5. Optional SEO growth: one indexable landing page per category (/plywood-kakinada etc.) instead of #anchors.
