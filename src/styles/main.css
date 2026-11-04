@@ -289,6 +289,8 @@ ul, ol { padding: 0; list-style: none; }
 .statement { font-family: var(--font-display); font-weight: 330; font-size: clamp(30px, 4.1vw, 62px); line-height: 1.14; letter-spacing: -0.022em; max-width: 12.7em; }
 .statement .w { color: var(--dim); transition: color .35s; }
 .statement .w.on { color: inherit; }
+.intro-house { margin-top: 26px; max-width: 34em; font-size: 17px; line-height: 1.55; color: var(--muted); }
+.intro-house strong { color: var(--gold-600); font-weight: 600; }
 .statement em { font-style: italic; color: var(--gold-600); }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); margin-top: clamp(56px, 7vw, 100px); }
 .stat { padding: 34px 26px 0 0; border-right: 1px solid var(--line); }
@@ -687,6 +689,7 @@ a.value-card:hover .card-go svg, a.value-card:focus-visible .card-go svg { trans
 .cta-map { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: var(--radius-lg); overflow: hidden; background: var(--forest-900); color: var(--ivory); box-shadow: var(--shadow-lg); }
 .cta-map .cm-copy { padding: clamp(36px, 5vw, 76px); display: flex; flex-direction: column; gap: 26px; position: relative; isolation: isolate; }
 .cta-map .cm-copy::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(80% 70% at 0% 100%, rgba(201,155,75,.2), transparent 70%); }
+.cm-exclusive { margin-top: -10px; font-family: var(--font-display); font-style: italic; font-size: clamp(18px, 1.6vw, 21px); line-height: 1.4; color: var(--gold-300); max-width: 26em; }
 .cm-list { display: grid; gap: 16px; margin-top: 8px; }
 .cm-list li { display: grid; grid-template-columns: 42px 1fr; gap: 14px; align-items: start; color: rgba(247,243,234,.82); }
 .cm-list .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(247,243,234,.07); color: var(--gold-300); }
@@ -740,6 +743,7 @@ a.value-card:hover .card-go svg, a.value-card:focus-visible .card-go svg { trans
 .founder-card .fc-k { position: absolute; right: -8%; top: -6%; width: 78%; opacity: .12; z-index: -1; color: var(--gold-300); }
 .founder-card .fc-name { font-family: var(--font-display); font-size: clamp(38px, 4vw, 58px); font-weight: 340; line-height: 1; letter-spacing: -0.02em; }
 .founder-card .fc-role { margin-top: 12px; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-300); }
+.founder-card .fc-house { margin-top: 8px; font-family: var(--font-display, inherit); font-size: 19px; font-style: italic; color: var(--ivory, #f5efe4); opacity: .9; }
 /* with a photo (admin → Settings → Founder photo): portrait fills the card, name sits on a dark fade */
 .founder-card .fc-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
 .founder-card.has-photo::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(3,20,13,.9) 0%, rgba(3,20,13,.45) 32%, transparent 58%); }
@@ -946,6 +950,7 @@ a.value-card:hover .card-go svg, a.value-card:focus-visible .card-go svg { trans
 .footer-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 40px; padding-block: clamp(70px, 8vw, 120px) 60px; }
 .footer-brand .brand { width: 210px; color: var(--ivory); margin-bottom: 26px; }
 .footer-brand p { max-width: 20.6em; font-size: 15.5px; }
+.footer-brand .footer-house { margin-top: 12px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
 .site-footer .footer-title { color: var(--ivory); font-size: 12px; letter-spacing: .22em; text-transform: uppercase; margin-bottom: 22px; font-weight: 600; }
 .site-footer ul { display: grid; gap: 12px; font-size: 15.5px; }
 .site-footer a:hover { color: var(--gold-300); }

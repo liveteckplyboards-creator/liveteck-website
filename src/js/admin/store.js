@@ -49,6 +49,10 @@ const MIGRATIONS = {
       if (defP[p.id] && ['plywood', 'block-board'].includes(p.category)) batch.update(doc(db, 'products', p.id), { features: defP[p.id].features, updatedAt: serverTimestamp() });
     });
   },
+  // Nov 2026, client request: full owner name (shown with "Rajendra Glass & Plywood" on the About page).
+  'owner-name-2026-11': async (batch, { settings }) => {
+    if (!settings?.owner || settings.owner === 'Amith Jain') batch.set(doc(db, 'settings', 'site'), { owner: SETTINGS.owner, updatedAt: serverTimestamp() }, { merge: true });
+  },
 };
 
 export async function runMigrations() {
@@ -58,7 +62,7 @@ export async function runMigrations() {
   if (!todo.length) return [];
   const [cats, prods] = await Promise.all([list('categories'), list('products')]);
   const batch = writeBatch(db);
-  for (const k of todo) await MIGRATIONS[k](batch, { cats, prods });
+  for (const k of todo) await MIGRATIONS[k](batch, { cats, prods, settings });
   batch.set(doc(db, 'settings', 'site'), { migrations: [...done, ...todo] }, { merge: true });
   await batch.commit();
   return todo;

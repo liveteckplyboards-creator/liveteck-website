@@ -1,8 +1,9 @@
 # Liveteck website: handoff
 
-Last updated: 2026-10-30
+Last updated: 2026-11-05
 
 ## State
+**2026-11-05 print brochure + "exclusive" line:** 4-page A4 brochure (print both sides of 2 sheets) at `D:/all/liveteck/print/brochure/Liveteck-Brochure-A4-4pages.pdf`; source `brochure.html` there (edit it, then re-render: `chrome --headless=new --no-pdf-header-footer --print-to-pdf=<pdf> file:///D:/all/liveteck/print/brochure/brochure.html`). Website: added "available exclusively at our own store" line to the home Visit section (`.cm-exclusive` in main.css) and the footer blurb. Built clean, screenshotted 390/1440. NOT committed (those files also hold earlier uncommitted founder-name edits) and NOT deployed.
 Client change list (Oct 2026 PDF + chat) is coded, builds clean (`npm run build`), browser-tested on localhost (desktop 1536 + phone 390 frames). **Deployed 2026-10-30: fdab42f pushed (includes range pin restore, founder photo, category pages); verified live on www.liveteckply.com.**
 
 Done in code:
@@ -17,6 +18,8 @@ Done in code:
 - **Live data:** a one-time migration (`runMigrations` in `src/js/admin/store.js`, id `features-2026-10`) writes these features to Firestore the first time the owner signs in to /admin after deploy. Until then the live site shows the old feature lists.
 - Founder photo: admin → Settings → "Founder photo" (Cloudinary upload); About founder card shows it (falls back to the logo card).
 - SEO: ROOT CAUSE was every canonical/og:url/sitemap/robots pointing to liveteck-website.vercel.app (SITE_URL unset). Default now https://www.liveteckply.com, vercel.app 301s to www (vercel.json). Keyword titles/descriptions per page, en-IN, LocalBusiness(HardwareStore) + WebSite graph, breadcrumbs, FAQPage (products + contact), products page has prerendered catalogue HTML + ItemList, internal links go to clean URLs in production, new products-page buyer FAQ.
+
+- **2026-11-05 owner name (NOT deployed yet):** client wants "Amit Kumar Jain (Rajendra Glass & Plywood)" to borrow the old business's reputation. About story/timeline/founder card (name hardcoded, no longer bound to settings.owner), home intro line above the statement, footer line, JSON-LD founder. Migration `owner-name-2026-11` sets settings.owner "Amith Jain" → "Amit Kumar Jain" on next admin sign-in. Screenshots: `D:ll\liveteck\media\owner-name\`.
 
 ## Next steps
 1. Founder photo: **done (2026-10-30, commit 5e73304).** v04 portrait uploaded to Cloudinary (`liveteck/brand/ubnbutqaeixljwq3jhgo.jpg`, 262 KB JPEG of the 03-picked PNG) and set as `SETTINGS.founderPhoto` in defaults.js. Live Firestore settings have no founderPhoto key, so the default shows; the owner can still replace it in admin → Settings. Screenshots: `D:\all\liveteck\media\founder\04-site\`.
