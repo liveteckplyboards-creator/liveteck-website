@@ -1,4 +1,5 @@
 @import './fonts.css';
+@import './admin-leads.css';
 /* Liveteck admin dashboard */
 :root {
   --forest-950: #03140d; --forest-900: #062619; --forest-800: #0a3a27; --forest-700: #0b4a32; --forest-600: #11603f;
@@ -38,7 +39,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .sidebar { position: sticky; top: 0; height: 100vh; background: var(--forest-900); color: rgba(247,243,234,.78); display: flex; flex-direction: column; padding: 26px 16px; gap: 6px; }
 .sidebar .logo { width: 160px; color: var(--ivory); margin: 0 10px 26px; }
 .sidebar .tag { margin: -18px 10px 22px; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-300); }
-.nav-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border-radius: 10px; border: 0; background: none; text-align: left; font-weight: 500; font-size: 14.5px; color: inherit; transition: background .2s, color .2s; }
+.nav-btn { text-decoration: none; display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border-radius: 10px; border: 0; background: none; text-align: left; font-weight: 500; font-size: 14.5px; color: inherit; transition: background .2s, color .2s; }
 .nav-btn svg { width: 19px; height: 19px; flex: none; opacity: .85; }
 .nav-btn:hover { background: rgba(247,243,234,.06); color: var(--ivory); }
 .nav-btn[aria-current='page'] { background: rgba(201,155,75,.16); color: var(--ivory); box-shadow: inset 3px 0 0 var(--gold-500); }
@@ -235,3 +236,65 @@ table.t tbody tr:hover { background: #fcfaf6; }
   .search { flex: 1; }
 }
 @media (max-width: 560px) { .stats { grid-template-columns: 1fr 1fr; gap: 10px; } .stat .v { font-size: 34px; } .t-item { grid-template-columns: 1fr; } }
+
+/* ---------- every device (Nov 2026) ---------- */
+html { -webkit-text-size-adjust: 100%; }
+.content { grid-template-columns: minmax(0, 1fr); }
+.content > * { min-width: 0; }
+.main { overflow-x: clip; }
+.ov-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.topbar h1 { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar .spacer { display: none; }
+#view-actions { flex: none; flex-wrap: nowrap; }
+.sidebar { overflow-y: auto; overscroll-behavior: contain; }
+.sb-backdrop { display: none; }
+:focus-visible { outline: 2px solid var(--gold-500); outline-offset: 2px; }
+@media (max-width: 1100px) { .ov-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) {
+  .sidebar { height: 100dvh; }
+  .sb-backdrop { display: block; position: fixed; inset: 0; z-index: 49; background: rgba(3,20,13,.45); opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .sidebar.open + .sb-backdrop { opacity: 1; pointer-events: auto; }
+  .topbar { gap: 10px; padding: 10px 12px; padding-top: max(10px, env(safe-area-inset-top)); }
+  #view-actions .btn { height: 40px; padding: 0 12px; }
+  .content { padding: 16px 12px 60px; gap: 16px; }
+  .card-head { padding: 14px 16px; }
+  .card-body { padding: 16px; }
+  .form-section { padding: 16px; }
+  /* iOS zooms the page when a field under 16px gets focus: that was the "page moves" on phones */
+  .input, .field input:not([type=checkbox]):not([type=radio]):not([type=file]), .field select, .field textarea, .search input { font-size: 16px; }
+  .toolbar > .seg { width: 100%; }
+  .modal { padding: 0; place-items: end stretch; }
+  .modal-card, .modal-card.sm { width: 100%; max-height: 94dvh; border-radius: 18px 18px 0 0; }
+  .modal-head { padding: 14px 16px; }
+  .modal-body { padding: 16px; }
+  .modal-foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); flex-wrap: wrap; }
+  .modal-foot .btn { flex: 1 1 auto; }
+  .toasts { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .toast { max-width: none; }
+  .p-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .m-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+}
+@media (max-width: 720px) {
+  /* tables turn into cards */
+  table.t.stack thead { display: none; }
+  table.t.stack, table.t.stack tbody { display: block; }
+  table.t.stack tr { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 14px 16px; border-bottom: 1px solid #f0ebe1; position: relative; }
+  table.t.stack tr:last-child { border-bottom: 0; }
+  table.t.stack td { display: block; padding: 0; border: 0; min-width: 0; overflow-wrap: anywhere; }
+  table.t.stack td[data-label] { grid-column: 1 / -1; }
+  table.t.stack td[data-label]::before { content: attr(data-label); display: block; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+  table.t.stack td.t-actions { grid-column: 2; grid-row: 1; justify-self: end; }
+  table.t.stack td.t-thumb { grid-column: 1; grid-row: 1; }
+  table.t.stack tr.is-new { box-shadow: inset 3px 0 0 var(--gold-500); }
+  table.t.stack tr.is-new td:first-child { box-shadow: none; }
+  .clamp { max-width: none; }
+  .t-item { padding: 16px; }
+}
+@media (max-width: 420px) {
+  .stats { gap: 8px; }
+  .stat { padding: 14px; }
+  .stat .v { font-size: 30px; }
+  .stat .k { font-size: 10.5px; letter-spacing: .1em; }
+  .login-art { padding: 24px; min-height: 200px; }
+  .login-art .logo { width: 160px; }
+}

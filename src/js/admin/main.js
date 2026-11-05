@@ -4,6 +4,8 @@ import { app, USE_EMULATORS } from '../core/firebase.js';
 import { $, $$, ic, toast } from './ui.js';
 import * as store from './store.js';
 import * as V from './views.js';
+import { leads, dueCount } from './leads.js';
+import { gallery } from './gallery.js';
 
 const auth = getAuth(app);
 if (USE_EMULATORS) connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
@@ -12,9 +14,11 @@ setPersistence(auth, browserLocalPersistence).catch(() => {});
 const ROUTES = {
   overview: { title: 'Overview', icon: ic.home, view: V.overview },
   enquiries: { title: 'Enquiries', icon: ic.inbox, view: V.enquiries, badge: 'enq' },
+  leads: { title: 'Leads', icon: ic.users, view: leads, badge: 'lead' },
   products: { title: 'Products', icon: ic.box, view: V.products },
   categories: { title: 'Categories', icon: ic.grid, view: V.categories },
   testimonials: { title: 'Testimonials', icon: ic.quote, view: V.testimonials, badge: 'tst' },
+  gallery: { title: 'Gallery', icon: ic.gallery, view: gallery },
   media: { title: 'Media library', icon: ic.image, view: V.media },
   settings: { title: 'Settings', icon: ic.cog, view: V.settings },
 };
@@ -28,13 +32,15 @@ $('#nav').innerHTML = Object.entries(ROUTES).map(([k, r]) =>
 
 async function refreshBadges() {
   try {
-    const [enq, tst] = await Promise.all([store.list('enquiries'), store.list('testimonials')]);
+    const [enq, tst, lds] = await Promise.all([store.list('enquiries'), store.list('testimonials'), store.list('leads').catch(() => [])]);
     const set = (k, n) => { const b = $(`[data-badge="${k}"]`); if (b) { b.hidden = !n; b.textContent = n; } };
     set('enq', enq.filter(e => e.status === 'new').length);
     set('tst', tst.filter(t => t.status === 'pending').length);
+    set('lead', dueCount(lds));
   } catch { /* ignore */ }
 }
 
+document.addEventListener('lt:badges', () => refreshBadges());
 V.setContext({
   refreshBadges,
   setActions: (html) => { $('#view-actions').innerHTML = html; },
@@ -65,7 +71,11 @@ const show = (which) => {
   $('#app').hidden = which !== 'app';
 };
 
-onAuthStateChanged(auth, async (user) => {
+if (store.DEMO) {
+  $('#who').textContent = 'Local preview · sample data';
+  show('app');
+  route();
+} else onAuthStateChanged(auth, async (user) => {
   if (!user) { show('login'); return; }
   if ((user.email || '').toLowerCase() !== V.ADMIN_EMAIL) {
     await signOut(auth);
@@ -77,11 +87,11 @@ onAuthStateChanged(auth, async (user) => {
   show('app');
   route();
   store.runMigrations()
-    .then(done => { if (done.length) { toast('Catalogue updated: new key features applied'); route(); } })
+    .then(done => { if (done.length) { toast('Website data updated'); route(); } })
     .catch(err => console.warn('[admin] catalogue update failed', err));
 });
 
-addEventListener('hashchange', () => { if (auth.currentUser) route(); });
+addEventListener('hashchange', () => { if (auth.currentUser || store.DEMO) route(); });
 
 $('#login-form').addEventListener('submit', async (e) => {
   e.preventDefault();

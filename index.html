@@ -336,10 +336,14 @@
             <span class="pp-avatar" data-pp-preview aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>
             <div class="pp-text">
               <label class="pp-btn" for="rv-photo">Upload a photo</label>
+              <button class="pp-cam" type="button" data-pp-camera hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Take a photo</button>
               <button class="pp-remove" type="button" data-pp-remove hidden>Remove</button>
               <span class="pp-hint" data-pp-hint>JPG, PNG or WebP · up to 8 MB. Shown as a small round picture with your review.</span>
             </div>
             <input class="sr-only" type="file" id="rv-photo" accept="image/jpeg,image/png,image/webp" data-pp-input />
+            <input class="sr-only" type="file" accept="image/*" capture="user" data-pp-capture tabindex="-1" aria-hidden="true" />
+          </div>
+          <div class="pp-cam-box" data-pp-cam-box hidden>
           </div>
         </div>
         <div class="field"><label for="rv-msg">Your review <span class="req">*</span></label><textarea id="rv-msg" name="message" required minlength="20" maxlength="1200" placeholder="What did you buy, and how did it work for you?"></textarea><span class="err">Please write at least 20 characters</span></div>

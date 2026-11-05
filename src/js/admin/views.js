@@ -119,15 +119,15 @@ export async function overview(view) {
         <div class="card stat"><span class="k">Products live</span><span class="v">${prods.filter(p => p.published !== false).length}</span><span class="s">${prods.length} in catalogue</span></div>
         <div class="card stat"><span class="k">Reviews to approve</span><span class="v">${pending}</span><span class="s">${tst.filter(t => t.status === 'approved').length} published</span></div>
       </div>
-      <div class="grid-2" style="grid-template-columns:1.6fr 1fr;align-items:start">
+      <div class="ov-grid">
         <div class="card">
           <div class="card-head"><h2>Latest enquiries</h2><span class="spacer"></span><a class="btn btn--ghost btn--sm" href="#/enquiries">View all</a></div>
-          ${enq.length ? `<div class="table-wrap"><table class="t"><tbody>${enq.slice(0, 6).map(e => `
+          ${enq.length ? `<div class="table-wrap"><table class="t stack"><tbody>${enq.slice(0, 6).map(e => `
             <tr class="${e.status === 'new' ? 'is-new' : ''}">
               <td><div class="cell-main">${esc(e.name)}</div><div class="cell-sub">${fmtDate(e.createdAt)}</div></td>
               <td><div>${esc(e.product || 'General enquiry')}</div><div class="cell-sub clamp">${esc(e.message || '')}</div></td>
               <td><span class="pill ${esc(e.status)}">${esc(e.status)}</span></td>
-              <td><div class="row" style="flex-wrap:nowrap"><a class="icon-btn" href="tel:${esc(e.phone)}" title="Call">${ic.phone}</a><a class="icon-btn" style="color:#1f9d55" href="${waLink(e.phone, `Hi ${e.name}, thank you for contacting Liveteck Ply & Boards.`)}" target="_blank" rel="noopener" title="WhatsApp">${ic.wa}</a></div></td>
+              <td class="t-actions"><div class="row" style="flex-wrap:nowrap"><a class="icon-btn" href="tel:${esc(e.phone)}" title="Call">${ic.phone}</a><a class="icon-btn" style="color:#1f9d55" href="${waLink(e.phone, `Hi ${e.name}, thank you for contacting Liveteck Ply & Boards.`)}" target="_blank" rel="noopener" title="WhatsApp">${ic.wa}</a></div></td>
             </tr>`).join('')}</tbody></table></div>` : '<div class="empty"><h3>No enquiries yet</h3><p>Enquiries from the website forms will appear here.</p></div>'}
         </div>
         <div class="card">
@@ -169,16 +169,16 @@ export async function enquiries(view) {
     const ql = q.toLowerCase();
     const rows = items.filter(e => (filter === 'all' || e.status === filter) && (!ql || [e.name, e.phone, e.email, e.product, e.city, e.message].join(' ').toLowerCase().includes(ql)));
     $('[data-table]', view).innerHTML = rows.length ? `
-      <table class="t"><thead><tr><th>Received</th><th>Customer</th><th>Contact</th><th>Product</th><th>Message</th><th>Status</th><th></th></tr></thead><tbody>
+      <table class="t stack"><thead><tr><th>Received</th><th>Customer</th><th>Contact</th><th>Product</th><th>Message</th><th>Status</th><th></th></tr></thead><tbody>
       ${rows.map(e => `<tr class="${e.status === 'new' ? 'is-new' : ''}" data-id="${e.id}">
-        <td class="cell-sub" style="white-space:nowrap">${fmtDate(e.createdAt)}</td>
-        <td><div class="cell-main">${esc(e.name)}</div><div class="cell-sub">${esc(e.city || '')}</div></td>
-        <td><div style="white-space:nowrap">${esc(e.phone)}</div>${e.email ? `<div class="cell-sub">${esc(e.email)}</div>` : ''}
+        <td class="cell-sub" style="white-space:nowrap" data-label="Received">${fmtDate(e.createdAt)}</td>
+        <td data-label="Customer"><div class="cell-main">${esc(e.name)}</div><div class="cell-sub">${esc(e.city || '')}</div></td>
+        <td data-label="Contact"><div style="white-space:nowrap">${esc(e.phone)}</div>${e.email ? `<div class="cell-sub">${esc(e.email)}</div>` : ''}
           <div class="row" style="margin-top:6px;flex-wrap:nowrap"><a class="icon-btn" href="tel:${esc(e.phone)}" title="Call">${ic.phone}</a><a class="icon-btn" style="color:#1f9d55" target="_blank" rel="noopener" href="${waLink(e.phone, `Hi ${e.name}, thank you for your enquiry with Liveteck Ply & Boards${e.product ? ` about ${e.product}` : ''}.`)}" title="WhatsApp">${ic.wa}</a></div></td>
-        <td>${esc(e.product || 'General')}</td>
-        <td><div class="clamp">${esc(e.message || '—')}</div>${e.notes ? `<div class="cell-sub" style="margin-top:4px">📝 ${esc(e.notes)}</div>` : ''}</td>
-        <td><select class="input" style="height:34px;width:auto" data-status>${STATUSES.map(s => `<option ${s === e.status ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
-        <td><div class="row" style="flex-wrap:nowrap"><button class="icon-btn" data-open title="Details">${ic.eye}</button><button class="icon-btn danger" data-del title="Delete">${ic.trash}</button></div></td>
+        <td data-label="Product">${esc(e.product || 'General')}</td>
+        <td data-label="Message"><div class="clamp">${esc(e.message || '—')}</div>${e.notes ? `<div class="cell-sub" style="margin-top:4px">📝 ${esc(e.notes)}</div>` : ''}</td>
+        <td data-label="Status"><select class="input" style="height:34px;width:auto" data-status>${STATUSES.map(s => `<option ${s === e.status ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
+        <td class="t-actions"><div class="row" style="flex-wrap:nowrap"><button class="icon-btn" data-open title="Details">${ic.eye}</button><button class="icon-btn danger" data-del title="Delete">${ic.trash}</button></div></td>
       </tr>`).join('')}</tbody></table>` : '<div class="empty"><h3>No enquiries here</h3><p>Try a different filter.</p></div>';
   };
   draw();
@@ -367,11 +367,11 @@ export async function categories(view) {
   try { [cats, prods] = await Promise.all([store.list('categories'), store.list('products')]); } catch (err) { return fail(view, err); }
   cats.sort(byOrder);
   const reload = () => categories(view);
-  view.innerHTML = `<div class="card"><div class="table-wrap">${cats.length ? `<table class="t"><thead><tr><th></th><th>Name</th><th>Label</th><th>Products</th><th>Order</th><th></th></tr></thead><tbody>
-    ${cats.map(c => `<tr data-id="${esc(c.id)}"><td><img class="thumb" src="${esc(thumb(c.image, 'w_120,h_96,c_fill'))}" alt="" /></td>
-      <td><div class="cell-main">${esc(c.name)}</div><div class="cell-sub">#${esc(c.id)}</div></td><td>${esc(c.meta || '')}</td>
-      <td>${prods.filter(p => p.category === c.id).length}</td><td>${c.order ?? '—'}</td>
-      <td><div class="row" style="flex-wrap:nowrap"><button class="icon-btn" data-edit>${ic.edit}</button><button class="icon-btn danger" data-del>${ic.trash}</button></div></td></tr>`).join('')}
+  view.innerHTML = `<div class="card"><div class="table-wrap">${cats.length ? `<table class="t stack"><thead><tr><th></th><th>Name</th><th>Label</th><th>Products</th><th>Order</th><th></th></tr></thead><tbody>
+    ${cats.map(c => `<tr data-id="${esc(c.id)}"><td class="t-thumb"><img class="thumb" src="${esc(thumb(c.image, 'w_120,h_96,c_fill'))}" alt="" /></td>
+      <td data-label="Name"><div class="cell-main">${esc(c.name)}</div><div class="cell-sub">#${esc(c.id)}</div></td><td data-label="Label">${esc(c.meta || '')}</td>
+      <td data-label="Products">${prods.filter(p => p.category === c.id).length}</td><td data-label="Order">${c.order ?? '—'}</td>
+      <td class="t-actions"><div class="row" style="flex-wrap:nowrap"><button class="icon-btn" data-edit>${ic.edit}</button><button class="icon-btn danger" data-del>${ic.trash}</button></div></td></tr>`).join('')}
     </tbody></table>` : '<div class="empty"><h3>No categories yet</h3><p>Use “Import default catalogue” in Settings, or add one.</p></div>'}</div></div>`;
   $('[data-new]').onclick = () => categoryForm(null, reload);
   on(view, 'click', async e => {

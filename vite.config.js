@@ -34,7 +34,7 @@ const CATEGORY_PAGES = Object.entries(CATEGORY_SLUGS).map(([id, slug]) => ({ id,
 // sitemap.xml + robots.txt at build time.
 function seoFiles() {
   const site = SITE;
-  const pages = [['/', '1.0', 'weekly'], ['/products', '0.9', 'weekly'], ...CATEGORY_PAGES.map(c => [`/${c.slug}`, '0.9', 'weekly']), ['/about', '0.7', 'monthly'], ['/testimonials', '0.6', 'weekly'], ['/contact', '0.8', 'monthly']];
+  const pages = [['/', '1.0', 'weekly'], ['/products', '0.9', 'weekly'], ...CATEGORY_PAGES.map(c => [`/${c.slug}`, '0.9', 'weekly']), ['/about', '0.7', 'monthly'], ['/gallery', '0.7', 'weekly'], ['/testimonials', '0.6', 'weekly'], ['/contact', '0.8', 'monthly']];
   const today = new Date().toISOString().slice(0, 10);
   return {
     name: 'seo-files',
@@ -49,7 +49,7 @@ function seoFiles() {
 
 // Production links point straight at the clean URLs the hosts serve (/products, not /products.html → 308 redirect),
 // in the pages and in the scripts that build links. Dev keeps the .html files Vite serves.
-const CLEAN = new RegExp(`(["'\`(=])\/(about|products|contact|testimonials|${CATEGORY_PAGES.map(c => c.slug).join('|')})\.html`, 'g');
+const CLEAN = new RegExp(`(["'\`(=])\/(about|products|contact|testimonials|gallery|${CATEGORY_PAGES.map(c => c.slug).join('|')})\.html`, 'g');
 function cleanLinks() {
   return {
     name: 'clean-links',
@@ -156,6 +156,7 @@ export default defineConfig({
         about: resolve(root, 'about.html'),
         products: resolve(root, 'products.html'),
         testimonials: resolve(root, 'testimonials.html'),
+        gallery: resolve(root, 'gallery.html'),
         contact: resolve(root, 'contact.html'),
         ...Object.fromEntries(CATEGORY_PAGES.map(c => [c.slug, resolve(root, `${c.slug}.html`)])),
         admin: resolve(root, 'admin/index.html'),

@@ -63,6 +63,20 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Public Gallery page: visitors see only photos the owner has switched on.
+    match /gallery/{id} {
+      allow read: if isAdmin() || resource.data.published == true;
+      allow write: if isAdmin();
+    }
+
+    // Leads from Meta ads etc. (names, phone numbers, addresses): owner only.
+    match /leads/{id} {
+      allow read, write: if isAdmin();
+    }
+    match /crm/{id} {
+      allow read, write: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

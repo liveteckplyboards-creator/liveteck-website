@@ -1,4 +1,4 @@
-import { SETTINGS, CATEGORIES, PRODUCTS } from './defaults.js';
+import { SETTINGS, CATEGORIES, PRODUCTS, SPACES } from './defaults.js';
 
 // Firestore is loaded lazily (separate chunk) — pages paint from cache/defaults first.
 let fbPromise = null;
@@ -73,6 +73,27 @@ export async function watchData(onData) {
     clearTimeout(timer);
     timer = setTimeout(() => onData(shape(initialData(), { ...parts, settings: parts.settings || undefined })), 250);
   }, (err) => { if (import.meta.env.DEV) console.warn('[liveteck] live updates stopped', err); });
+}
+
+/* ---------- gallery (only the Gallery page loads it) ---------- */
+const GALLERY_KEY = 'lt-gallery-v1';
+// Until the owner adds photos in admin → Gallery, the page shows the interiors the site already uses.
+const DEFAULT_GALLERY = SPACES.map((s, i) => ({ id: `d${i}`, url: s.image, caption: s.title, album: s.tag }));
+export function initialGallery() {
+  try { const g = JSON.parse(localStorage.getItem(GALLERY_KEY)); if (Array.isArray(g) && g.length) return { list: g, fromCache: true }; } catch { /* storage unavailable */ }
+  return { list: DEFAULT_GALLERY, fromCache: false };
+}
+export async function loadGallery() {
+  await idleStart();
+  const { db, collection, getDocs, query, where } = await fb();
+  const snap = await withTimeout(getDocs(query(collection(db, 'gallery'), where('published', '==', true))));
+  const list = snap.docs.map(d => { const { createdAt, updatedAt, published, ...g } = d.data(); return { id: d.id, ...g, t: createdAt?.seconds || 0 }; })
+    .filter(g => /^https:\/\//.test(g.url || ''))
+    .sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || b.t - a.t)
+    .map(({ t, ...g }) => g);
+  if (!list.length) return DEFAULT_GALLERY;
+  try { localStorage.setItem(GALLERY_KEY, JSON.stringify(list)); } catch { /* storage unavailable */ }
+  return list;
 }
 
 const clean = (v, max) => String(v ?? '').trim().slice(0, max);
